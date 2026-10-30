@@ -1,0 +1,245 @@
+/* ============== 基础变量 ============== */
+:root {
+    --bg-color: #FFF9C4;
+    --bg-flash: rgba(244, 67, 54, 0.15);
+    --ball-color: #2196F3;
+    --ball-hover: #1976D2;
+    --score-positive: #4CAF50;
+    --color-warning: #F44336;
+    --bar-bg: #FFFFFF;
+    --bar-border: #E0E0E0;
+    --btn-primary: #2196F3;
+    --btn-primary-hover: #1976D2;
+    --text-main: #333;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: system-ui, -apple-system, sans-serif;
+    color: var(--text-main);
+    overflow: hidden;
+    transition: background-color 0.05s;
+}
+
+/* ============== 页面背景 ============== */
+.page-bg {
+    background-color: var(--bg-color);
+    min-height: 100vh;
+}
+
+/* 扣分时背景闪红 */
+.page-bg.flash-red {
+    background-color: var(--bg-flash) !important;
+}
+
+/* ============== 顶部信息栏 ============== */
+.top-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background: var(--bar-bg);
+    border-bottom: 2px solid var(--bar-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 24px;
+    z-index: 100;
+}
+
+.score-display, .time-display {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.time-display.warning {
+    color: var(--color-warning);
+    animation: pulse-warning 0.5s infinite alternate;
+}
+
+@keyframes pulse-warning {
+    from { opacity: 1; }
+    to   { opacity: 0.6; }
+}
+
+/* ============== 游戏区域 ============== */
+.game-area {
+    margin-top: 60px;
+    width: 100vw;
+    height: calc(100vh - 60px);
+    position: relative;
+    cursor: default;
+}
+
+.game-area.playing {
+    cursor: crosshair;
+}
+
+/* ============== 开始按钮容器 ============== */
+.start-screen {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 50;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* ============== 按钮 ============== */
+.btn {
+    padding: 16px 40px;
+    font-size: 20px;
+    font-weight: bold;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s, background-color 0.15s;
+}
+
+.btn-primary {
+    background-color: var(--btn-primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--btn-primary-hover);
+    transform: scale(1.05);
+    box-shadow: 0 6px 18px rgba(33, 150, 243, 0.4);
+}
+
+.btn-primary:active {
+    transform: scale(0.98);
+}
+
+/* ============== 小球容器 ============== */
+.balls-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* 让背景点击穿透到 game-area */
+}
+
+.ball {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: var(--ball-color);
+    cursor: pointer;
+    pointer-events: auto; /* 小球恢复可点击 */
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.35);
+    transform: translate(-50%, -50%);
+    animation: ball-appear 0.3s ease-out;
+}
+
+.ball:hover {
+    background-color: var(--ball-hover);
+}
+
+/* 小球出现动画 */
+@keyframes ball-appear {
+    from {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+    }
+    to {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+/* 小球消失动画（命中时） */
+@keyframes ball-disappear {
+    from {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+    to {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+    }
+}
+
+.ball.hit {
+    animation: ball-disappear 0.3s ease-in forwards;
+    pointer-events: none;
+}
+
+/* ============== 得分浮字 ============== */
+.score-popup {
+    position: absolute;
+    font-size: 28px;
+    font-weight: bold;
+    pointer-events: none;
+    animation: score-float 0.8s ease-out forwards;
+    z-index: 200;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+@keyframes score-float {
+    from {
+        transform: translate(-50%, -50%) translateY(0);
+        opacity: 1;
+    }
+    to {
+        transform: translate(-50%, -50%) translateY(-60px);
+        opacity: 0;
+    }
+}
+
+/* ============== 结束弹窗 ============== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: modal-fade-in 0.3s ease-out;
+}
+
+@keyframes modal-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.modal-content {
+    background: white;
+    padding: 40px 60px;
+    border-radius: 16px;
+    text-align: center;
+    animation: modal-zoom 0.3s ease-out;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+@keyframes modal-zoom {
+    from { transform: scale(0.9); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+}
+
+.modal-content h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.final-score {
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 30px;
+    color: var(--btn-primary);
+}

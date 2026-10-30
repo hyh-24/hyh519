@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bottom Nav · Font Awesome</title>
+    <link rel="stylesheet" href="cdn/font-awesome/css/all.min.css">
+    <style>
+        /* ===== hyh 变量 ===== */
+        :root {
+            --hyh_mobile_max: 480px;
+            --hyh_nav_h: 72px;
+            --hyh_bg: #f7f7f9;
+            --hyh_surface: #ffffff;
+            --hyh_nav_bg: rgba(255, 255, 255, 0.92);
+            --hyh_active: #6c5ce7;
+            --hyh_inactive: #a0a0b0;
+            --hyh_text: #1d1d2b;
+            --hyh_badge: #ff4d6a;
+            --hyh_red_dot: #ff3b30;
+            --hyh_shadow: 0 -4px 24px rgba(29, 29, 43, 0.08);
+            --hyh_safe_bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        html, body {
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+            background: #e8e8ed;
+            color: var(--hyh_text);
+        }
+
+        /* ===== 手机容器（自适应居中） ===== */
+        .hyh_phone_frame {
+            max-width: var(--hyh_mobile_max);
+            margin: 0 auto;
+            min-height: 100vh;
+            background: var(--hyh_bg);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 60px rgba(0, 0, 0, 0.08);
+        }
+
+        /* ===== 首页入口 ===== */
+        .hyh_home_link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 200;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-size: 18px;
+            color: var(--hyh_active);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+            transition: transform 0.2s;
+        }
+        .hyh_home_link:active { transform: scale(0.9); }
+
+        /* ===== 模拟状态栏 ===== */
+        .hyh_status_bar {
+            height: 44px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 24px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .hyh_status_right { display: flex; gap: 6px; align-items: center; }
+
+        /* ===== 页面主内容区 ===== */
+        .hyh_page_content {
+            padding: 12px 20px calc(var(--hyh_nav_h) + var(--hyh_safe_bottom) + 24px);
+            min-height: calc(100vh - 44px);
+        }
+        .hyh_page_title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .hyh_page_subtitle {
+            font-size: 14px;
+            color: var(--hyh_inactive);
+            margin-bottom: 24px;
+        }
+
+        /* ===== 卡片列表（视觉占位） ===== */
+        .hyh_content_card {
+            background: var(--hyh_surface);
+            border-radius: 16px;
+            padding: 16px 18px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+        .hyh_card_thumb {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--hyh_active), #a29bfe);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+        .hyh_card_text { flex: 1; }
+        .hyh_card_title { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+        .hyh_card_desc { font-size: 12px; color: var(--hyh_inactive); }
+
+        /* ===== 底部导航 ===== */
+        .hyh_bottom_nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: var(--hyh_mobile_max);
+            height: calc(var(--hyh_nav_h) + var(--hyh_safe_bottom));
+            padding-bottom: var(--hyh_safe_bottom);
+            background: var(--hyh_nav_bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 0.5px solid rgba(0, 0, 0, 0.06);
+            box-shadow: var(--hyh_shadow);
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            z-index: 150;
+        }
+
+        .hyh_nav_item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding-top: 10px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+        }
+
+        /* 图标容器（徽章定位基准） */
+        .hyh_nav_icon_wrap {
+            position: relative;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 4px;
+        }
+
+        .hyh_nav_icon {
+            font-size: 22px;
+            color: var(--hyh_inactive);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .hyh_nav_label {
+            font-size: 10px;
+            font-weight: 500;
+            color: var(--hyh_inactive);
+            letter-spacing: 0.02em;
+            transition: color 0.25s;
+        }
+
+        /* ===== Active 态 ===== */
+        .hyh_nav_item.is_active .hyh_nav_icon {
+            color: var(--hyh_active);
+            transform: translateY(-2px) scale(1.08);
+        }
+        .hyh_nav_item.is_active .hyh_nav_label {
+            color: var(--hyh_active);
+            font-weight: 600;
+        }
+
+        /* ===== 数字徽章 ===== */
+        .hyh_nav_badge {
+            position: absolute;
+            top: -4px;
+            right: -10px;
+            min-width: 16px;
+            height: 16px;
+            padding: 0 4px;
+            border-radius: 8px;
+            background: var(--hyh_badge);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            line-height: 16px;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(255, 77, 106, 0.4);
+            animation: hyh_badge-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* ===== 小红点 ===== */
+        .hyh_nav_dot {
+            position: absolute;
+            top: 2px;
+            right: -2px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--hyh_red_dot);
+            box-shadow: 0 0 0 2px var(--hyh_nav_bg);
+            animation: hyh_dot-pulse 2s infinite;
+        }
+
+        @keyframes hyh_badge-pop {
+            0%   { transform: scale(0); }
+            70%  { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+        @keyframes hyh_dot-pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50%      { opacity: 0.6; transform: scale(0.85); }
+        }
+
+        /* active 指示条（顶部小横条） */
+        .hyh_nav_indicator {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 3px;
+            border-radius: 0 0 3px 3px;
+            background: var(--hyh_active);
+            opacity: 0;
+            transition: opacity 0.25s;
+        }
+        .hyh_nav_item.is_active .hyh_nav_indicator { opacity: 1; }
+    </style>
+</head>
+<body>
+
+    <div class="hyh_phone_frame">
+
+        <!-- 首页入口 -->
+        <a href="index.html" class="hyh_home_link" title="返回首页">🏠</a>
+
+        <!-- 状态栏占位 -->
+        <div class="hyh_status_bar">
+            <span>9:41</span>
+            <div class="hyh_status_right">
+                <i class="fa-solid fa-signal"></i>
+                <i class="fa-solid fa-wifi"></i>
+                <i class="fa-solid fa-battery-full"></i>
+            </div>
+        </div>
+
+        <!-- 页面内容（点击不同导航切换） -->
+        <div class="hyh_page_content" id="hyh_page_content">
+            <h1 class="hyh_page_title" id="hyh_page_title">Discover</h1>
+            <p class="hyh_page_subtitle" id="hyh_page_sub">Explore curated content</p>
+
+            <div class="hyh_content_card">
+                <div class="hyh_card_thumb"><i class="fa-solid fa-compass"></i></div>
+                <div class="hyh_card_text">
+                    <div class="hyh_card_title">Today's Picks</div>
+                    <div class="hyh_card_desc">Handpicked for you · 12 items</div>
+                </div>
+            </div>
+            <div class="hyh_content_card">
+                <div class="hyh_card_thumb"><i class="fa-solid fa-fire"></i></div>
+                <div class="hyh_card_text">
+                    <div class="hyh_card_title">Trending Now</div>
+                    <div class="hyh_card_desc">Hot in your region</div>
+                </div>
+            </div>
+            <div class="hyh_content_card">
+                <div class="hyh_card_thumb"><i class="fa-solid fa-sparkles"></i></div>
+                <div class="hyh_card_text">
+                    <div class="hyh_card_title">New Arrivals</div>
+                    <div class="hyh_card_desc">Fresh this week · 28 items</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 固定底部导航 -->
+        <nav class="hyh_bottom_nav">
+
+            <!-- 1. Discover（首页，红点） -->
+            <div class="hyh_nav_item is_active" data-tab="discover">
+                <div class="hyh_nav_indicator"></div>
+                <div class="hyh_nav_icon_wrap">
+                    <i class="fa-solid fa-compass hyh_nav_icon"></i>
+                    <span class="hyh_nav_dot"></span>
+                </div>
+                <span class="hyh_nav_label">Discover</span>
+            </div>
+
+            <!-- 2. Message（数字徽章 99+） -->
+            <div class="hyh_nav_item" data-tab="message">
+                <div class="hyh_nav_indicator"></div>
+                <div class="hyh_nav_icon_wrap">
+                    <i class="fa-regular fa-message hyh_nav_icon"></i>
+                    <span class="hyh_nav_badge">99+</span>
+                </div>
+                <span class="hyh_nav_label">Message</span>
+            </div>
+
+            <!-- 3. Notification（数字徽章 12） -->
+            <div class="hyh_nav_item" data-tab="notify">
+                <div class="hyh_nav_indicator"></div>
+                <div class="hyh_nav_icon_wrap">
+                    <i class="fa-regular fa-bell hyh_nav_icon"></i>
+                    <span class="hyh_nav_badge">12</span>
+                </div>
+                <span class="hyh_nav_label">Alerts</span>
+            </div>
+
+            <!-- 4. Profile -->
+            <div class="hyh_nav_item" data-tab="profile">
+                <div class="hyh_nav_indicator"></div>
+                <div class="hyh_nav_icon_wrap">
+                    <i class="fa-regular fa-user hyh_nav_icon"></i>
+                </div>
+                <span class="hyh_nav_label">Profile</span>
+            </div>
+
+        </nav>
+
+    </div>
+
+    <script>
+        // hyh_ 命名：底部导航切换
+        const hyh_navItems = document.querySelectorAll('.hyh_nav_item');
+        const hyh_pageTitle = document.getElementById('hyh_page_title');
+        const hyh_pageSub   = document.getElementById('hyh_page_sub');
+
+        const hyh_tabMap = {
+            discover: { title: 'Discover',  sub: 'Explore curated content' },
+            message:  { title: 'Messages', sub: '3 unread conversations' },
+            notify:   { title: 'Alerts',   sub: '12 new notifications' },
+            profile:  { title: 'Profile',  sub: 'Your personal space' }
+        };
+
+        hyh_navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                hyh_navItems.forEach(n => n.classList.remove('is_active'));
+                item.classList.add('is_active');
+                const key = item.dataset.tab;
+                if (hyh_tabMap[key]) {
+                    hyh_pageTitle.textContent = hyh_tabMap[key].title;
+                    hyh_pageSub.textContent   = hyh_tabMap[key].sub;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
