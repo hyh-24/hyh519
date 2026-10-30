@@ -5,7 +5,7 @@ description: Commit the current project and push it to git@github.com:hyh-24/hyh
 
 # Commit and Push to GitHub
 
-Target repository: `git@github.com:hyh-24/hyh.git` (SSH, authenticated by the key already configured on this machine).
+Target repository: `hyh-24/hyh`. This machine's network blocks SSH port 22, so the working remote is `ssh://git@ssh.github.com:443/hyh-24/hyh.git` (same repo, SSH over port 443, authenticated by the configured key).
 
 ## Steps
 
@@ -13,28 +13,25 @@ Target repository: `git@github.com:hyh-24/hyh.git` (SSH, authenticated by the ke
 2. Check the repo:
    - `git rev-parse --is-inside-work-tree` — if it fails, run `git init -b main`.
    - `git branch --show-current` — if empty, `git checkout -b main`.
-3. Point `origin` at the SSH URL:
-   - `git remote get-url origin`; if it is missing run `git remote add origin git@github.com:hyh-24/hyh.git`, if it differs run `git remote set-url origin git@github.com:hyh-24/hyh.git`.
+3. Point `origin` at the working SSH URL:
+   - `git remote get-url origin`; if it is missing run `git remote add origin ssh://git@ssh.github.com:443/hyh-24/hyh.git`, if it differs run `git remote set-url origin ssh://git@ssh.github.com:443/hyh-24/hyh.git`.
    - Never configure a credential helper or rewrite global git config.
 4. Review before staging: `git status` (no `-uall`) and `git diff`. Exclude secrets (`.env`, private keys, tokens) and do not commit them; warn the user instead.
 5. Stage the work: `git add -A` at the project root. Check `git status` again for anything unintended.
-6. Commit using a HEREDOC message that states why the change was made:
+6. Commit with a message that states why the change was made. The shell is PowerShell, which has no heredoc — write the message to `.git/hyh_commit_msg.txt` with the Write tool (UTF-8, so Chinese is not mangled), then:
 
-```bash
-git commit -m "$(cat <<'EOF'
-<type>: <summary>
-
-<optional 1-2 line context>
-EOF
-)"
+```powershell
+git commit -F .git/hyh_commit_msg.txt --quiet; Remove-Item .git/hyh_commit_msg.txt
 ```
+
+Message shape: `<type>: <summary>` plus 1-2 lines of context, e.g. `feat: 新增学生成绩面板`.
 
 7. Push: `git push -u origin main`. First push of a fresh repo is fine; never use `--force`.
 8. Report the commit hash (`git rev-parse --short HEAD`), branch, and remote URL.
 
 ## Troubleshooting
 
-- SSH auth failure: run `ssh -T git@github.com` (expect a greeting, not a shell). Do not switch to HTTPS unless the user asks.
+- SSH auth failure: run `ssh -p 443 -T git@ssh.github.com` (expect a greeting, not a shell). Port 22 is refused on this machine, so always keep the 443 URL. Do not switch to HTTPS unless the user asks.
 - Non-fast-forward rejection: fetch and integrate (`git pull --rebase origin main`), then push again. Do not force-push.
 - Push blocked by sandbox network: retry the push with `dangerouslyDisableSandbox: true`.
 - Nothing to commit: report that the working tree is already clean and skip the commit, but still verify whether the branch is ahead of the remote.
