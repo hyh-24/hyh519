@@ -1,11 +1,12 @@
 ---
 name: commit-to-github
-description: Commit the current project and push it to git@github.com:hyh-24/hyh.git with the machine's configured SSH key. Use when the user asks to submit work to GitHub, push changes, or sync this workspace with the hyh repository.
+description: Commit the 24002120519黄煜涵 coursework folder and push it to github.com/hyh-24/hyh using the configured SSH key. Use when the user asks to submit their coursework, push changes to GitHub, or sync this workspace with the hyh repository.
 ---
 
 # Commit and Push to GitHub
 
-Target repository: `hyh-24/hyh`. This machine's network blocks SSH port 22, so the working remote is `ssh://git@ssh.github.com:443/hyh-24/hyh.git` (same repo, SSH over port 443, authenticated by the configured key).
+Target repository: `hyh-24/hyh`. Coursework folder: `webhyh/24002120519黄煜涵`.
+This machine's network blocks SSH port 22, so the working remote is `ssh://git@ssh.github.com:443/hyh-24/hyh.git` (same repo, SSH over 443, authenticated by the configured ed25519 key).
 
 ## Steps
 
@@ -16,8 +17,8 @@ Target repository: `hyh-24/hyh`. This machine's network blocks SSH port 22, so t
 3. Point `origin` at the working SSH URL:
    - `git remote get-url origin`; if it is missing run `git remote add origin ssh://git@ssh.github.com:443/hyh-24/hyh.git`, if it differs run `git remote set-url origin ssh://git@ssh.github.com:443/hyh-24/hyh.git`.
    - Never configure a credential helper or rewrite global git config.
-4. Review before staging: `git status` (no `-uall`) and `git diff`. Exclude secrets (`.env`, private keys, tokens) and do not commit them; warn the user instead.
-5. Stage the work: `git add -A` at the project root. Check `git status` again for anything unintended.
+4. Review before staging: `git status --short -- "webhyh/24002120519黄煜涵"` and `git diff -- "webhyh/24002120519黄煜涵"`. Exclude secrets (`.env`, private keys, tokens) and do not commit them; warn the user instead.
+5. Stage the coursework only: `git add -A -- "webhyh/24002120519黄煜涵"`. Add other paths (`.trae/skills` etc.) only when they changed as part of the same request. Check `git status` again for anything unintended.
 6. Commit with a message that states why the change was made. The shell is PowerShell, which has no heredoc — write the message to `.git/hyh_commit_msg.txt` with the Write tool (UTF-8, so Chinese is not mangled), then:
 
 ```powershell
