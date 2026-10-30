@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 抓小球小游戏</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="page-bg">
+
+    <!-- 顶部信息栏 -->
+    <header class="top-bar">
+        <div class="score-display">分数：<span id="score">0</span></div>
+        <div class="time-display">剩余：<span id="time">—</span></div>
+    </header>
+
+    <!-- 游戏区域 -->
+    <main id="game-area" class="game-area">
+
+        <!-- 初始开始按钮 -->
+        <div id="start-screen" class="start-screen">
+            <button id="start-btn" class="btn btn-primary">🎮 开始游戏</button>
+        </div>
+
+        <!-- 小球容器（动态插入） -->
+        <div id="balls-container" class="balls-container"></div>
+    </main>
+
+    <!-- 游戏结束弹窗（默认隐藏） -->
+    <div id="end-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2>⏱ 时间到！</h2>
+            <p class="final-score">最终得分：<span id="final-score">0</span> 分</p>
+            <button id="restart-btn" class="btn btn-primary">🔄 再来一局</button>
+        </div>
+    </div>
+
+    <!-- 页面入口 -->
+    <a href="target.html" style="position:fixed;right:16px;bottom:16px;z-index:9999;padding:8px 14px;border-radius:20px;background:rgba(255,255,255,.92);color:#1f2733;font-size:13px;font-weight:700;text-decoration:none;box-shadow:0 4px 14px rgba(0,0,0,.18)">学生成绩面板 →</a>
+
+    <script src="script.js"></script>
+</body>
+</html>
