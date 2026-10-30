@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        //math对象
+        console.log(Math.floor(8.7));//向下取整
+        console.log(Math.round(8.7));//四舍五入
+        console.log(Math.ceil(8.7));//向上取整
+        console.log(Math.random());//随机数0-1之间
+        //获取从min到max的随机数
+        function getRandom(min,max){
+            return Math.floor(Math.random()*(max-min+1));
+        }
+        console.log(getRandom(100,900));//获取100到900之间的随机整数
+        //date对象
+        var date = new Date();
+        console.log(date.getFullYear());//获取年份
+        console.log(date.getMonth()+1);//获取月份0-11     
+        console.log(date.getDate());//获取日期
+        console.log(date.getDay()+1);//获取星期几0-6
+        console.log(date.getHours());//获取小时
+        console.log(date.getMinutes());//获取分钟
+        console.log(date.getSeconds());//获取秒数
+        console.log(date.getMilliseconds());//获取时间戳，从1970年1月1日0时0分0秒开始毫秒数
+        //整组对象
+        var arr=[1,2,3,4,'five','six','seven'];   
+         var arr1=new Array(1,2,3,4,'five','six','seven'); 
+         console.log(arr);
+         console.log(arr1); 
+         console.log(new Array(5));//创建一个长度为5的数组，里面没有元素
+        var arr2=Array.of(5);//创建一个长度为1的数组，里面有一个元素5
+        console.log(arr2);
+     </script>
+</body>
+</html>
