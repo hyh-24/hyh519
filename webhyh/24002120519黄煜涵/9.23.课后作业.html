@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        /* 普通数字：红色格子 */
+        div{
+            width:150px;
+            height:150px;
+            background-color:red;
+            margin:10px;
+            color:white;
+            text-align:center;
+            line-height:150px;
+            font-size:26px;
+            display:inline-block;
+        }
+        /* 回文数专属样式：金色+黑字加粗+橙色发光边框，突出突显 */
+        .huiwen{
+            background-color:gold;
+            color:black;
+            font-weight:bold;
+            font-size:38px;
+            border:5px solid darkorange;
+            box-shadow:0 0 25px orange;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        //判断回文数：把数字倒过来，和原数相等就是回文数（正着读=倒着读）
+        //个位数1~9正反读都一样，不算，从两位数开始才突显回文数
+        function isPalindrome(n){
+            if(n<10){ return false; }   //1-9个位数不显示为回文数
+            var m=n, rev=0;
+            while(m>0){
+                rev=rev*10+m%10;   //每次取出个位，加到rev末尾
+                m=parseInt(m/10);  //去掉个位，继续下一轮
+            }
+            return rev===n;
+        }
+        //课后练习：回文数显示（11-100数数，个位数1-9不显示，回文数用金色样式突显出来）
+        for(var i=11;i<=100;i++){
+            if(isPalindrome(i)){
+                document.write("<div class='huiwen'>"+i+"</div>");
+            }
+            else{
+                document.write("<div>"+i+"</div>");
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,121 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor "读者用户" as R
+actor "作家用户" as W
+actor "系统管理员" as A
+
+rectangle "读书人APP系统" {
+  usecase "阅读图书" as UC1
+  usecase "在线阅读" as UC1a
+  usecase "阅读批注" as UC1b
+  usecase "购买付费图书" as UC1c
+  usecase "离线阅读" as UC1d
+  usecase "在线图书馆" as UC2
+  usecase "检索图书" as UC2a
+  usecase "查阅图书" as UC2b
+  usecase "下载电子书" as UC2c
+  usecase "读者管理" as UC3
+  usecase "注册登录" as UC3a
+  usecase "编辑/修改读者信息" as UC3b
+  usecase "升级为会员读者" as UC3c
+  usecase "读书会管理" as UC4
+  usecase "参与读书会" as UC4a
+  usecase "创建读书会" as UC4b
+  usecase "管理人员和内容" as UC4c
+  usecase "书架管理" as UC5
+  usecase "加入书架" as UC5a
+  usecase "删除已读书籍" as UC5b
+  usecase "预约活动" as UC5c
+  usecase "退出活动" as UC5d
+  usecase "联系作家" as UC6
+  usecase "在线联系作家" as UC6a
+  usecase "给作家留言" as UC6b
+
+  usecase "作品管理" as UC7
+  usecase "上传作品" as UC7a
+  usecase "修改作品" as UC7b
+  usecase "修改作品介绍" as UC7c
+  usecase "修改章节内容" as UC7d
+  usecase "删除作品" as UC7e
+  usecase "读者评论管理" as UC8
+  usecase "查看评论" as UC8a
+  usecase "回复评论" as UC8b
+  usecase "查看读者信息" as UC9
+  usecase "查看读者列表" as UC9a
+  usecase "回复读者私信" as UC9b
+  usecase "社团管理" as UC10
+  usecase "发起社团活动" as UC10a
+  usecase "邀请读者参与" as UC10b
+  usecase "发布社团信息" as UC10c
+
+  usecase "读者管理(管理员)" as UC11
+  usecase "创建读者用户" as UC11a
+  usecase "读者信息审核" as UC11b
+  usecase "禁言管理" as UC11c
+  usecase "作家管理" as UC12
+  usecase "作品审核" as UC12a
+  usecase "上架新作品" as UC12b
+  usecase "下架不合格作品" as UC12c
+  usecase "图书信息管理" as UC13
+  usecase "订单管理" as UC14
+  usecase "评论管理" as UC15
+  usecase "数据统计" as UC16
+}
+
+R --> UC1
+R --> UC2
+R --> UC3
+R --> UC4
+R --> UC5
+R --> UC6
+W --> UC7
+W --> UC8
+W --> UC9
+W --> UC10
+A --> UC11
+A --> UC12
+A --> UC13
+A --> UC14
+A --> UC15
+A --> UC16
+
+UC1 ..> UC1a : <<include>>
+UC1 ..> UC1b : <<include>>
+UC1c ..> UC1 : <<extend>>
+UC1d ..> UC1 : <<extend>>
+UC2 ..> UC2a : <<include>>
+UC2 ..> UC2b : <<include>>
+UC2 ..> UC2c : <<include>>
+UC3 ..> UC3a : <<include>>
+UC3 ..> UC3b : <<include>>
+UC3c ..> UC3b : <<extend>>
+UC4 ..> UC4a : <<include>>
+UC4 ..> UC4b : <<include>>
+UC4 ..> UC4c : <<include>>
+UC5 ..> UC5a : <<include>>
+UC5 ..> UC5b : <<include>>
+UC5 ..> UC5c : <<include>>
+UC5 ..> UC5d : <<include>>
+UC6 ..> UC6a : <<include>>
+UC6 ..> UC6b : <<include>>
+UC7 ..> UC7a : <<include>>
+UC7 ..> UC7b : <<include>>
+UC7 ..> UC7e : <<include>>
+UC7b ..> UC7c : <<include>>
+UC7b ..> UC7d : <<include>>
+UC8 ..> UC8a : <<include>>
+UC8 ..> UC8b : <<include>>
+UC9 ..> UC9a : <<include>>
+UC9 ..> UC9b : <<include>>
+UC10 ..> UC10a : <<include>>
+UC10 ..> UC10b : <<include>>
+UC10 ..> UC10c : <<include>>
+UC11 ..> UC11a : <<include>>
+UC11 ..> UC11b : <<include>>
+UC11 ..> UC11c : <<include>>
+UC12 ..> UC12a : <<include>>
+UC12 ..> UC12b : <<include>>
+UC12 ..> UC12c : <<include>>
+@enduml
