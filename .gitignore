@@ -1,8 +1,0 @@
-﻿# 嵌套仓库备份（可改名 webhyh/.git-backup -> .git 还原）
-webhyh/.git-backup/
-
-# 编辑器与本机配置
-.vscode/
-*.log
-Thumbs.db
-desktop.ini
