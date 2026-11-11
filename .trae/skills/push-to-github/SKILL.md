@@ -1,11 +1,11 @@
 ---
 name: push-to-github
-description: 将当前项目全部变更 git add、commit 并 force push 到 https://github.com/hyh-24/hyh.git，使用已配置的 SSH 公钥认证。当用户要求提交代码到 GitHub、push、强推或同步项目到远程仓库时使用。不用于推送到其他远程仓库。
+description: 将当前项目全部变更 git add、commit 并推送到 https://github.com/hyh-24/hyh519.git，使用已配置的 SSH 公钥认证。当用户要求提交代码到 GitHub、push 或同步项目到远程仓库时使用。默认目标固定为 hyh519，不推送到 hyh.git。
 ---
 
 # Push to GitHub
 
-把当前项目（c:\Users\HYH\Desktop\网页设计\index）的全部变更提交并强制推送到 GitHub 远程仓库 hyh-24/hyh。
+把当前项目（c:\Users\HYH\Desktop\网页设计\index）的全部变更提交并推送到 GitHub 远程仓库 hyh-24/hyh519。
 
 ## 执行步骤
 
@@ -25,16 +25,16 @@ description: 将当前项目全部变更 git add、commit 并 force push 到 htt
 
    ```
    git remote remove origin    # 仅当 origin 已存在但指向其他地址时执行
-   git remote add origin ssh://git@ssh.github.com:443/hyh-24/hyh.git
+   git remote add origin ssh://git@ssh.github.com:443/hyh-24/hyh519.git
    ```
 
-6. 强制推送当前分支（强覆盖）：
+6. 推送当前分支：
 
    ```
-   git push --force -u origin HEAD
+   git push -u origin HEAD
    ```
 
-   若远程默认分支为 main 而本地分支为 master，改用 `git push --force -u origin HEAD:main`。
+   若远程默认分支为 main 而本地分支为 master，改用 `git push -u origin HEAD:main`。若推送被拒绝（远程有新提交），先 `git pull --rebase origin main` 再推；需要让远端内容与本地一致时，用"以远端 HEAD 为父提交、树替换为本地树"的方式提交后再推，不使用 `--force`。
 7. 验证：`git status` 显示分支与 origin 同步、`git log --oneline -1` 显示刚才的提交，即推送成功。
 
 ## 项目规范（新建或修改页面时必须遵守）
@@ -46,9 +46,10 @@ description: 将当前项目全部变更 git add、commit 并 force push 到 htt
 
 ## 约束
 
-- 远程地址固定为 `ssh://git@ssh.github.com:443/hyh-24/hyh.git`。`git@github.com:...` 形式走 22 端口会连接失败，HTTPS 不可用。
+- 远程地址固定为 `ssh://git@ssh.github.com:443/hyh-24/hyh519.git`。`git@github.com:...` 形式走 22 端口会连接失败，HTTPS 不可用。
 - 本机 shell 为 PowerShell 5，多条命令用 `;` 连接（不支持 `&&`）。
-- `--force` 强推是本技能的默认行为（用户要求强覆盖远程历史）。
+- 不使用 `git push --force`（强推 main 会改写历史）；需要覆盖远端内容时按第 6 步的内容级覆盖做法执行。
+- `index/` 仓库的 `origin` 若指向 hyh.git，保持原样，不要顺手同步到 hyh.git。
 - 不使用 `--no-verify`、`--no-gpg-sign`；不执行 `git config --global`。
 - 不要为凑提交而新建 README 或其他无关文件。
 - 推送完成后向用户报告：提交信息、分支名、推送结果。

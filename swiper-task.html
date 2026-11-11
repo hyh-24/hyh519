@@ -211,6 +211,7 @@
       <button data-fx="coverflow">coverflow 画廊堆叠（沉浸）</button>
       <button data-fx="flip">flip 翻页（复古）</button>
       <button data-fx="cards">cards 卡片（俏皮）</button>
+      <button data-fx="creative">creative 电影墙（第 7 种）</button>
     </div>
     <div class="wy-demo">
       <span class="wy-demo-tag">🎛️ 演示四 · 效果实验台（点按钮切换 effect）</span>
@@ -282,7 +283,24 @@
     effect: 'slide',                         // 初始效果：平推
     speed: 800,                              // 切换动画 800 毫秒
     autoplay: { delay: 3200, disableOnInteraction: false }, // 每 3.2 秒自动翻页，手动操作后不停
-    pagination: { el: '#wyPag4', clickable: true }          // 圆点分页器可点击
+    pagination: { el: '#wyPag4', clickable: true },         // 圆点分页器可点击
+    // 黄煜涵：creative（第 7 种效果）自定义变换，做出"电影选片墙"的纵深感
+    creativeEffect: {
+      // prev：上一张 → 缩小、左移、带 Y 轴旋转角度，像海报向左后方退去
+      prev: {
+        translate: ['-130%', 0, -300],
+        rotate: [0, 50, 0],
+        scale: 0.6,
+        opacity: 0.4
+      },
+      // next：下一张 → 缩小、右移、反向带角度；切到它时会放大并左移进场
+      next: {
+        translate: ['130%', 0, -300],
+        rotate: [0, -50, 0],
+        scale: 0.6,
+        opacity: 0.4
+      }
+    }
   };
   var hyh_swiper4 = new Swiper('#wySw4', hyh_fxBase4);
 
