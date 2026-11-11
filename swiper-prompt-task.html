@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<!--
+  作者：黄煜涵
+  建立时间：2026-11-11
+  使用大模型：TRAE 内置大模型
+  功能名称：Swiper 课堂任务一 · 提示词工程师（两轮提示词迭代 + AI 输出验证）
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>任务一 · 提示词工程师：让 AI 听懂需求</title>
+<!-- 黄煜涵：引入本地 Swiper 资源，用于在本页直接展示第一轮/第二轮代码的运行效果对比 -->
+<link rel="stylesheet" href="./swiper/swiper-bundle.min.css">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif;background:#f6f8fc;color:#1f2937;line-height:1.8}
+  .hyh_wrap{max-width:980px;margin:0 auto;padding:40px 20px 60px}
+
+  /* 头部 */
+  .hyh_head{background:linear-gradient(135deg,#0f2b5b,#1d5bbf);border-radius:20px;padding:36px 38px;color:#fff;margin-bottom:14px;box-shadow:0 12px 30px rgba(15,43,91,.3)}
+  .hyh_head .hyh_badge{display:inline-block;padding:5px 14px;border-radius:999px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);font-size:13px;letter-spacing:2px;margin-bottom:14px}
+  .hyh_head h1{font-size:28px;letter-spacing:1px;line-height:1.4}
+  .hyh_head h1 b{color:#ffd166}
+  .hyh_head p{margin-top:12px;font-size:14.5px;color:#d9e3f5;line-height:2}
+
+  /* 任务说明框 */
+  .hyh_rule{background:#fffbea;border:1px solid #fde68a;border-radius:16px;padding:18px 22px;margin-bottom:30px;font-size:14px;color:#7c5e10;line-height:2}
+  .hyh_rule b{color:#b45309}
+  .hyh_rule code{background:#fef3c7;color:#92400e;padding:1px 7px;border-radius:5px;font-family:Consolas,monospace;font-size:13px}
+
+  /* 章节 */
+  .hyh_sec{background:#fff;border-radius:18px;padding:28px 30px;margin-bottom:26px;border:1px solid #e8ecf5;box-shadow:0 4px 14px rgba(31,41,55,.06);position:relative;overflow:hidden}
+  .hyh_sec::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:linear-gradient(#0f2b5b,#1d5bbf)}
+  .hyh_sec_head{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+  .hyh_sec_head .hyh_no{flex:none;width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#0f2b5b,#1d5bbf);color:#fff;font-size:19px;font-weight:bold;display:flex;align-items:center;justify-content:center}
+  .hyh_sec_head h2{font-size:20px;color:#111827}
+  .hyh_sec_head small{display:block;font-weight:normal;color:#9ca3af;font-size:13px;margin-top:3px}
+  .hyh_sec p{font-size:14.5px;color:#374151;margin-bottom:10px}
+
+  /* 需求列表 */
+  .hyh_req{background:#eef2ff;border-radius:12px;padding:14px 18px;margin:14px 0}
+  .hyh_req li{font-size:14px;color:#1e3a8a;margin:6px 0;list-style:none;padding-left:22px;position:relative}
+  .hyh_req li::before{content:"";position:absolute;left:0;top:10px;width:10px;height:10px;border-radius:50%;background:#1d5bbf}
+
+  /* 对话气泡 */
+  .hyh_chat{margin:16px 0}
+  .hyh_turn{margin-bottom:18px}
+  .hyh_role{display:inline-block;font-size:12.5px;font-weight:bold;padding:3px 12px;border-radius:999px;margin-bottom:8px}
+  .hyh_role.hyh_user{background:#dbeafe;color:#1e40af}
+  .hyh_role.hyh_ai{background:#fef3c7;color:#92400e}
+  .hyh_bubble{border-radius:14px;padding:16px 18px;font-size:14px;line-height:1.9}
+  .hyh_bubble.hyh_user{background:#eff6ff;color:#1e3a8a;border:1px solid #bfdbfe}
+  .hyh_bubble.hyh_ai{background:#fffbeb;color:#78350f;border:1px solid #fde68a}
+
+  /* 代码块 */
+  .hyh_code{background:#1e293b;color:#e2e8f0;border-radius:12px;padding:16px 18px;margin:10px 0;overflow-x:auto;font-family:Consolas,"Courier New",monospace;font-size:13.5px;line-height:1.7}
+  .hyh_code .hyh_cmt{color:#64748b;font-style:italic}
+  .hyh_code .hyh_key{color:#7dd3fc}
+  .hyh_code .hyh_str{color:#fca5a5}
+  .hyh_code .hyh_num{color:#fcd34d}
+  .hyh_code .hyh_bool{color:#c4b5fd}
+
+  /* 问题标记 */
+  .hyh_bad{background:#fef2f2;border:1px dashed #fca5a5;border-radius:12px;padding:14px 18px;margin:14px 0}
+  .hyh_bad h3{color:#b91c1c;font-size:15px;margin-bottom:8px}
+  .hyh_bad li{font-size:13.5px;color:#991b1b;margin:6px 0;list-style:none;padding-left:20px;position:relative}
+  .hyh_bad li::before{content:"✗";position:absolute;left:0;color:#dc2626;font-weight:bold}
+
+  .hyh_good{background:#f0fdf4;border:1px dashed #86efac;border-radius:12px;padding:14px 18px;margin:14px 0}
+  .hyh_good h3{color:#15803d;font-size:15px;margin-bottom:8px}
+  .hyh_good li{font-size:13.5px;color:#166534;margin:6px 0;list-style:none;padding-left:20px;position:relative}
+  .hyh_good li::before{content:"✓";position:absolute;left:0;color:#16a34a;font-weight:bold}
+
+  /* 验证截图 */
+  .hyh_shot{margin:16px 0;text-align:center}
+  .hyh_shot img{max-width:100%;border-radius:14px;border:1px solid #e8ecf5;box-shadow:0 6px 18px rgba(0,0,0,.1)}
+  .hyh_shot p{font-size:13px;color:#6b7280;margin-top:8px}
+
+  /* 验证结论表 */
+  .hyh_check{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  .hyh_check th,.hyh_check td{border:1px solid #e8ecf5;padding:10px 12px;text-align:left}
+  .hyh_check th{background:#f8fafc;color:#0f2b5b}
+  .hyh_check td:first-child{width:38%;font-weight:bold;color:#374151}
+  .hyh_ok{color:#16a34a;font-weight:bold}
+
+  /* 答辩 */
+  .hyh_qa{margin:14px 0}
+  .hyh_qa details{background:#f8fafc;border-radius:12px;padding:12px 16px;margin-bottom:10px;border:1px solid #e8ecf5}
+  .hyh_qa summary{cursor:pointer;font-weight:bold;color:#0f2b5b;font-size:14.5px}
+  .hyh_qa p{font-size:14px;color:#374151;margin-top:10px}
+
+  .hyh_back{text-align:center;margin-top:28px}
+  .hyh_back a{display:inline-block;text-decoration:none;color:#0f2b5b;font-size:14.5px;font-weight:bold;background:#fff;border:1px solid #dbe4ff;border-radius:999px;padding:10px 26px;transition:transform .2s,box-shadow .2s}
+  .hyh_back a:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(15,43,91,.15)}
+
+  footer{text-align:center;margin-top:34px;color:#9ca3af;font-size:13px;line-height:2}
+
+  /* ===== 第一轮/第二轮 实况对比展示 ===== */
+  .hyh_cmp{display:flex;flex-wrap:wrap;gap:20px;margin:18px 0}
+  .hyh_demo{flex:1 1 380px;min-width:0;border-radius:16px;padding:16px;border:2px solid}
+  .hyh_demo.hyh_bad{border-color:#fca5a5;background:#fef2f2}
+  .hyh_demo.hyh_good{border-color:#86efac;background:#f0fdf4}
+  .hyh_demo h3{font-size:16px;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+  .hyh_demo .hyh_tag{font-size:12px;padding:2px 10px;border-radius:999px;color:#fff}
+  .hyh_bad .hyh_tag{background:#dc2626}
+  .hyh_good .hyh_tag{background:#16a34a}
+  .hyh_demo .hyh_tip{font-size:13px;margin-bottom:12px;line-height:1.7}
+  .hyh_bad .hyh_tip{color:#991b1b}
+  .hyh_good .hyh_tip{color:#166534}
+  .hyh_demo .swiper{height:200px;border-radius:12px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.12)}
+  .hyh_demo .swiper-slide{position:relative;height:200px}
+  .hyh_demo .swiper-slide img{width:100%;height:100%;object-fit:cover;display:block}
+  .hyh_demo .swiper-pagination-bullet{background:#0f2b5b;opacity:.35}
+  .hyh_demo .swiper-pagination-bullet-active{background:#e8890c;opacity:1;width:20px;border-radius:6px}
+
+  /* 代码中"缺失参数"的红色高亮标注 */
+  .hyh_code .hyh_missing{color:#fca5a5;background:rgba(220,38,38,.15);padding:1px 5px;border-radius:4px;text-decoration:line-through;text-decoration-color:#dc2626}
+  .hyh_code .hyh_added{color:#86efac;background:rgba(22,163,74,.15);padding:1px 5px;border-radius:4px}
+
+  /* 对比结论表 */
+  .hyh_cmp_table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+  .hyh_cmp_table th,.hyh_cmp_table td{border:1px solid #e8ecf5;padding:10px 12px;text-align:center}
+  .hyh_cmp_table th{background:#f8fafc;color:#0f2b5b}
+  .hyh_cmp_table td:first-child{text-align:left;font-weight:bold;color:#374151}
+  .hyh_fail{color:#dc2626;font-weight:bold}
+  .hyh_pass{color:#16a34a;font-weight:bold}
+</style>
+</head>
+<body>
+<div class="hyh_wrap">
+
+  <div class="hyh_head">
+    <span class="hyh_badge">高 职 · 高 级 网 页 设 计 · 课 堂 任 务 一</span>
+    <h1>提示词工程师 · <b>让 AI 听懂需求</b></h1>
+    <p>本任务<b>不写代码</b>，写提示词。把需求"翻译"给 AI，让它生成 <code style="background:rgba(255,255,255,.15);color:#ffd166;padding:1px 7px;border-radius:5px">new Swiper('#wySw4', {...})</code> 配置。<br>硬性要求：至少迭代 <b>2 轮</b>提示词，保留每轮提示词与 AI 回答；亲自粘进页面验证，截图 + 一句话结论。</p>
+  </div>
+
+  <div class="hyh_rule">
+    <b>📋 原始需求（必须全部满足）：</b><br>
+    ① <b>无缝循环</b>　② <b>3.2 秒自动翻页且手动操作后不停止</b>　③ <b>圆点分页器可点击</b>　④ <b>初始效果为 cube</b>
+  </div>
+
+  <!-- 第 1 轮 -->
+  <div class="hyh_sec">
+    <div class="hyh_sec_head">
+      <span class="hyh_no">1</span>
+      <h2>第 1 轮：模糊提示 → AI 大概率遗漏<small>需求没有逐条明确，AI 自行发挥</small></h2>
+    </div>
+
+    <div class="hyh_chat">
+      <div class="hyh_turn">
+        <span class="hyh_role hyh_user">👤 我的提示词（第 1 轮）</span>
+        <div class="hyh_bubble hyh_user">
+          帮我写一个 Swiper 初始化配置，选择器是 #wySw4。要求：循环播放，每 3.2 秒自动切换，有圆点分页器，初始用 cube 效果。
+        </div>
+      </div>
+      <div class="hyh_turn">
+        <span class="hyh_role hyh_ai">🤖 AI 第 1 轮回答</span>
+        <div class="hyh_bubble hyh_ai">
+          <div class="hyh_code"><span class="hyh_key">new</span> <span class="hyh_key">Swiper</span>(<span class="hyh_str">'#wySw4'</span>, {
+  <span class="hyh_key">loop</span>: <span class="hyh_bool">true</span>,
+  <span class="hyh_key">autoplay</span>: {
+    <span class="hyh_key">delay</span>: <span class="hyh_num">3200</span>
+    <span class="hyh_cmt">// <span class="hyh_missing">未显式写 disableOnInteraction: false</span> → 若默认值为 true 手动后会停止</span>
+  },
+  <span class="hyh_key">pagination</span>: {
+    <span class="hyh_key">el</span>: <span class="hyh_str">'#wyPag4'</span>
+    <span class="hyh_cmt">// <span class="hyh_missing">缺 clickable: true</span> → 圆点不能点击跳转</span>
+  },
+  <span class="hyh_key">effect</span>: <span class="hyh_str">'cube'</span>
+});</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hyh_bad">
+      <h3>❌ 第 1 轮代码漏了什么？</h3>
+      <ul>
+        <li><b>autoplay</b> 未显式写 <code>disableOnInteraction: false</code> —— 依赖 Swiper 默认值，若默认 <code>true</code> 则手动拖动后自动播放会<b>停止</b>，违反"手动操作后不停止"</li>
+        <li><b>pagination</b> 缺 <code>clickable: true</code> —— 圆点<b>不能点击</b>跳转，违反"可点击"</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 第 2 轮 -->
+  <div class="hyh_sec">
+    <div class="hyh_sec_head">
+      <span class="hyh_no">2</span>
+      <h2>第 2 轮：逐条拆解 → 精确命中<small>把需求拆成编号清单，每条给出参数名+值</small></h2>
+    </div>
+
+    <div class="hyh_chat">
+      <div class="hyh_turn">
+        <span class="hyh_role hyh_user">👤 我的提示词（第 2 轮）</span>
+        <div class="hyh_bubble hyh_user">
+          帮我写 <code>Swiper('#wySw4')</code> 的完整配置对象，必须严格满足以下 4 条，<b>缺一条都算错</b>，只输出 JS 代码不要解释：<br>
+          1. <code>loop: true</code>（无缝循环）<br>
+          2. <code>autoplay: { delay: 3200, disableOnInteraction: false }</code>（每 3.2 秒自动翻页，且用户手动拖动后自动播放不停止）<br>
+          3. <code>pagination: { el: '#wyPag4', clickable: true }</code>（圆点分页器可点击跳转）<br>
+          4. <code>effect: 'cube'</code>（初始效果为 3D 立方体）
+        </div>
+      </div>
+      <div class="hyh_turn">
+        <span class="hyh_role hyh_ai">🤖 AI 第 2 轮回答</span>
+        <div class="hyh_bubble hyh_ai">
+          <div class="hyh_code"><span class="hyh_key">new</span> <span class="hyh_key">Swiper</span>(<span class="hyh_str">'#wySw4'</span>, {
+  <span class="hyh_key">loop</span>: <span class="hyh_bool">true</span>,
+  <span class="hyh_key">autoplay</span>: {
+    <span class="hyh_key">delay</span>: <span class="hyh_num">3200</span>,
+    <span class="hyh_added"><span class="hyh_key">disableOnInteraction</span>: <span class="hyh_bool">false</span></span>
+  },
+  <span class="hyh_key">pagination</span>: {
+    <span class="hyh_key">el</span>: <span class="hyh_str">'#wyPag4'</span>,
+    <span class="hyh_added"><span class="hyh_key">clickable</span>: <span class="hyh_bool">true</span></span>
+  },
+  <span class="hyh_key">effect</span>: <span class="hyh_str">'cube'</span>
+});</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hyh_good">
+      <h3>✅ 第 2 轮代码：4 条需求全部命中</h3>
+      <ul>
+        <li><code>loop: true</code> —— 无缝循环</li>
+        <li><code>delay: 3200</code> + <code>disableOnInteraction: false</code> —— 3.2 秒翻页且手动后不停</li>
+        <li><code>el: '#wyPag4'</code> + <code>clickable: true</code> —— 圆点可点击</li>
+        <li><code>effect: 'cube'</code> —— 初始 3D 立方体效果</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 效果对比展示：用第一轮/第二轮代码各跑一个真实 Swiper，可交互对比 -->
+  <div class="hyh_sec">
+    <div class="hyh_sec_head">
+      <span class="hyh_no">3</span>
+      <h2>效果对比展示（可交互实测）<small>左边跑第 1 轮代码，右边跑第 2 轮代码，亲手试区别</small></h2>
+    </div>
+    <p>下面两个轮播用的就是 AI 两轮给出的<b>真实代码</b>。按提示操作，立刻能看出差别。</p>
+
+    <div class="hyh_cmp">
+      <!-- 第一轮：buggy 版本 -->
+      <div class="hyh_demo hyh_bad">
+        <h3>第 1 轮代码 <span class="hyh_tag">有缺陷</span></h3>
+        <div class="hyh_tip">
+          🔴 试试<b>点击圆点</b> → 没反应（缺 <code>clickable</code>）<br>
+          🔴 试试<b>手动拖一下</b> → 自动播放停了（<code>disableOnInteraction</code> 未设为 false）<br>
+          <span style="font-size:12px;color:#b91c1c"></span>
+        </div>
+        <div class="swiper" id="hyhSwA">
+          <div class="swiper-wrapper">
+            <div class="swiper-slide"><img src="swiper-imgs/tiangong_1.jpg" alt="天宫"></div>
+            <div class="swiper-slide"><img src="swiper-imgs/fuxing_1.jpg" alt="复兴号"></div>
+            <div class="swiper-slide"><img src="swiper-imgs/c919_1.jpg" alt="C919"></div>
+            <div class="swiper-slide"><img src="swiper-imgs/aida_1.jpg" alt="爱达魔都号"></div>
+          </div>
+          <div class="swiper-pagination" id="hyhPagA"></div>
+        </div>
+      </div>
+
+      <!-- 第二轮：正确版本 -->
+      <div class="hyh_demo hyh_good">
+        <h3>第 2 轮代码 <span class="hyh_tag">全部满足</span></h3>
+        <div class="hyh_tip">
+          🟢 试试<b>点击圆点</b> → 直接跳转（<code>clickable: true</code>）<br>
+          🟢 试试<b>手动拖一下</b> → 自动播放继续（<code>disableOnInteraction: false</code>）
+        </div>
+        <div class="swiper" id="hyhSwB">
+          <div class="swiper-wrapper">
+            <div class="swiper-slide"><img src="swiper-imgs/tiangong_1.jpg" alt="天宫"></div>
+            <div class="swiper-slide"><img src="swiper-imgs/fuxing_1.jpg" alt="复兴号"></div>
+            <div class="swiper-slide"><img src="swiper-imgs/c919_1.jpg" alt="C919"></div>
+            <div class="swiper-slide"><img src="swiper-imgs/aida_1.jpg" alt="爱达魔都号"></div>
+          </div>
+          <div class="swiper-pagination" id="hyhPagB"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 验证 -->
+  <div class="hyh_sec">
+    <div class="hyh_sec_head">
+      <span class="hyh_no">4</span>
+      <h2>逐项验证结论<small>第 1 轮 vs 第 2 轮，4 项需求逐条对比</small></h2>
+    </div>
+
+    <div class="hyh_shot">
+      <img src="swiper-imgs/verify-cube.png" alt="cube 3D 效果验证截图">
+      <p>▲ cube 3D 立方体效果实测截图（第 2 轮代码运行结果）</p>
+    </div>
+
+    <table class="hyh_cmp_table">
+      <thead>
+        <tr><th>需求项</th><th>第 1 轮（模糊提示）</th><th>第 2 轮（逐条拆解）</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>① 无缝循环</td><td><span class="hyh_pass">✓ 通过</span></td><td><span class="hyh_pass">✓ 通过</span></td></tr>
+        <tr><td>② 3.2 秒自动翻页且手动后不停</td><td><span class="hyh_fail">✗ 失败</span>：手动拖后自动播放停止</td><td><span class="hyh_pass">✓ 通过</span>：拖动后继续自动翻</td></tr>
+        <tr><td>③ 圆点分页器可点击</td><td><span class="hyh_fail">✗ 失败</span>：圆点不能点击</td><td><span class="hyh_pass">✓ 通过</span>：点圆点直接跳转</td></tr>
+        <tr><td>④ 初始效果为 cube</td><td><span class="hyh_pass">✓ 通过</span></td><td><span class="hyh_pass">✓ 通过</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 答辩准备 -->
+  <div class="hyh_sec">
+    <div class="hyh_sec_head">
+      <span class="hyh_no">5</span>
+      <h2>答辩抽问准备<small>点击展开参考答案</small></h2>
+    </div>
+    <div class="hyh_qa">
+      <details>
+        <summary>Q1：你的第一版提示词漏掉了哪个需求？</summary>
+        <p>漏掉了两个细节：①"手动操作后不停止"——没有明确写出 <code>disableOnInteraction: false</code>；②"圆点可点击"——没有明确写出 <code>clickable: true</code>。第一版提示词用了"循环播放""自动切换""有圆点分页器"这种模糊描述，AI 只给了最基础的 <code>delay</code> 和 <code>el</code>，把这两个关键子参数省掉了。</p>
+      </details>
+      <details>
+        <summary>Q2：你是怎么在第二轮里"说清楚"的？</summary>
+        <p>把需求拆成 <b>4 条编号清单</b>，每一条都直接写出对应的 <b>参数名和参数值</b>，并且附上中文解释（如"用户手动拖动后自动播放不停止"）。同时加了约束语"缺一条都算错，只输出代码不要解释"，逼迫 AI 逐条对照，不让它自由发挥省略细节。</p>
+      </details>
+      <details>
+        <summary>Q3：AI 第一次给的代码错在哪？</summary>
+        <p>两处错误：① <code>autoplay</code> 只有 <code>delay: 3200</code>，没有 <code>disableOnInteraction: false</code>，导致用户手动滑动一次后自动播放就永久停止了；② <code>pagination</code> 只有 <code>el: '#wyPag4'</code>，没有 <code>clickable: true</code>，导致分页圆点只能看不能点，无法点击跳转。</p>
+      </details>
+    </div>
+  </div>
+
+  <div class="hyh_back"><a href="index.html">← 返回课堂实践中心</a>　<a href="swiper-task.html">查看 Swiper 课堂任务页 →</a></div>
+
+  <footer>任务一 · 提示词工程师：让 AI 听懂需求 · 黄煜涵 · 高级网页设计 · 2026-2027-1</footer>
+</div>
+
+<!-- 黄煜涵：引入本地 Swiper JS，初始化两个对比 demo -->
+<script src="./swiper/swiper-bundle.min.js"></script>
+<script>
+  // 黄煜涵：左侧 demo —— 第 1 轮 AI 给出的代码（有缺陷），原样运行以展示问题
+  var hyh_swiperA = new Swiper('#hyhSwA', {
+    loop: true,
+    autoplay: { delay: 3200, disableOnInteraction: true }, // 显式设为 true：手动拖动后自动播放停止
+    pagination: { el: '#hyhPagA' },        // 缺 clickable:true → 圆点不能点
+    effect: 'cube'
+  });
+
+  // 黄煜涵：右侧 demo —— 第 2 轮 AI 给出的代码（正确），4 项需求全部满足
+  var hyh_swiperB = new Swiper('#hyhSwB', {
+    loop: true,
+    autoplay: { delay: 3200, disableOnInteraction: false },  // 手动后继续自动播放
+    pagination: { el: '#hyhPagB', clickable: true },          // 圆点可点击跳转
+    effect: 'cube'
+  });
+</script>
+</body>
+</html>
