@@ -1,0 +1,7 @@
+[build]
+publish = "24002120519黄煜涵"
+
+[[redirects]]
+from = "/"
+to = "/index.html.html"
+status = 200
