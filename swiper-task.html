@@ -254,9 +254,7 @@
       speed:600,
       slidesPerView: 1,
       spaceBetween: 30,
-      loop: true,
-      // 黄煜涵：任务三加分项——keyboard 键盘控制，课堂未讲
-      // enabled:true 开启键盘监听，按 ← → 方向键即可翻页；onlyInViewport 默认为 true，轮播在可视区内才响应
+      loop: true,  
       keyboard: {
         enabled: true,
       },
@@ -274,10 +272,10 @@
   // ── 任务 3：初始化 #wySw3，循环 + 2.6 秒自动翻页 + 拖动后不停 + 圆点 ──
   // TODO: 在这里写你的代码
  var mySw33 = new Swiper('#wySw3', {
-  loop: true,                          // 循环播放：永不"到头"
+  loop: true,                        
   autoplay: {
-    delay: 2600,                      // 每张停留 2.6 秒
-    disableOnInteraction: false       // 用户拖动后，自动播放继续
+    delay: 2600,                      
+    disableOnInteraction: false      
   },
   speed: 700,
   pagination: { el: '#wyPag3', clickable: true }

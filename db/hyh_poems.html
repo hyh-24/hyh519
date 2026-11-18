@@ -1,0 +1,545 @@
+<!--
+  作者：黄煜涵
+  建立时间：2026-11-13
+  使用大模型：Trae AI Assistant
+  功能名称：古风诗词上图下文展示页（从本地 db 服务器获取数据）
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📜 古风诗词 · 上图下文</title>
+  <style>
+    /* ========== hyh_ 前缀 CSS 类名 ========== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "STKaiti", "KaiTi", "楷体", "SimSun", serif;
+      background: linear-gradient(135deg, #f5e6d3 0%, #e8d5b7 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .hyh_page_header {
+      text-align: center;
+      margin-bottom: 40px;
+      position: relative;
+    }
+
+    .hyh_home_link {
+      position: absolute;
+      top: 0;
+      left: 20px;
+      padding: 8px 16px;
+      background: rgba(139, 90, 43, 0.8);
+      color: #fff;
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: background 0.3s;
+    }
+
+    .hyh_home_link:hover {
+      background: rgba(139, 90, 43, 1);
+    }
+
+    .hyh_page_title {
+      font-size: 2.5rem;
+      color: #6b4423;
+      text-shadow: 2px 2px 4px rgba(139, 90, 43, 0.3);
+      letter-spacing: 8px;
+    }
+
+    .hyh_page_subtitle {
+      margin-top: 10px;
+      color: #8b5a2b;
+      font-size: 1rem;
+    }
+
+    .hyh_server_hint {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background: rgba(255, 220, 180, 0.6);
+      border-radius: 8px;
+      display: inline-block;
+      color: #8b5a2b;
+      font-size: 0.9rem;
+    }
+
+    .hyh_server_hint code {
+      background: #6b4423;
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: Consolas, monospace;
+      margin: 0 5px;
+    }
+
+    .hyh_poems_container {
+      max-width: 800px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 50px;
+    }
+
+    .hyh_poem_card {
+      background: rgba(255, 250, 240, 0.95);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(139, 90, 43, 0.2);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .hyh_poem_card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(139, 90, 43, 0.35);
+    }
+
+    /* 上图区域 */
+    .hyh_poem_image_wrapper {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      overflow: hidden;
+      background: #e8d5b7;
+    }
+
+    .hyh_poem_image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.5s;
+    }
+
+    .hyh_poem_card:hover .hyh_poem_image {
+      transform: scale(1.03);
+    }
+
+    /* 下文区域 */
+    .hyh_poem_content_area {
+      padding: 25px 30px;
+      text-align: center;
+    }
+
+    .hyh_poem_author {
+      color: #a07655;
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+    }
+
+    .hyh_poem_title {
+      font-size: 1.8rem;
+      color: #4a2c1a;
+      margin-bottom: 15px;
+      letter-spacing: 4px;
+    }
+
+    .hyh_poem_body {
+      font-size: 1.15rem;
+      line-height: 2.2;
+      color: #5d3a1f;
+      white-space: pre-line;
+      padding: 15px 10px;
+      border-top: 1px dashed #d4a76a;
+      border-bottom: 1px dashed #d4a76a;
+    }
+
+    /* 加载/错误状态 */
+    .hyh_loading, .hyh_error {
+      text-align: center;
+      padding: 40px;
+      font-size: 1.2rem;
+    }
+
+    .hyh_loading { color: #6b4423; }
+    .hyh_error { color: #c0392b; }
+
+    .hyh_retry_btn {
+      margin-top: 15px;
+      padding: 10px 25px;
+      background: #8b5a2b;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-family: inherit;
+    }
+
+    .hyh_retry_btn:hover { background: #6b4423; }
+
+    /* 作者代表作品标签（Promise.all 第二数据源展示）（黄煜涵） */
+    .hyh_author_works {
+      margin-top: 15px;
+      padding-top: 12px;
+      border-top: 1px dashed #d4a76a;
+      font-size: 0.9rem;
+      color: #8b5a2b;
+      text-align: center;
+    }
+
+    .hyh_work_tag {
+      display: inline-block;
+      margin: 4px 4px 0 4px;
+      padding: 3px 10px;
+      background: #f5e6d3;
+      border: 1px solid #d4a76a;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      color: #6b4423;
+    }
+
+    /* ========== 任务三：搜索框 + 排序按钮（黄煜涵） ========== */
+    .hyh_toolbar {
+      max-width: 800px;
+      margin: 0 auto 30px;
+      padding: 18px 22px;
+      background: rgba(255, 250, 240, 0.85);
+      border-radius: 12px;
+      box-shadow: 0 4px 18px rgba(139, 90, 43, 0.12);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .hyh_search_box {
+      flex: 1;
+      min-width: 200px;
+      display: flex;
+      align-items: center;
+      background: #fff;
+      border: 2px solid #d4a76a;
+      border-radius: 24px;
+      padding: 0 14px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .hyh_search_box:focus-within {
+      border-color: #8b5a2b;
+      box-shadow: 0 0 0 3px rgba(139, 90, 43, 0.15);
+    }
+
+    .hyh_search_icon {
+      color: #8b5a2b;
+      font-size: 1rem;
+      margin-right: 8px;
+      user-select: none;
+    }
+
+    .hyh_search_input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      padding: 10px 0;
+      font-family: inherit;
+      font-size: 1rem;
+      color: #4a2c1a;
+    }
+
+    .hyh_search_input::placeholder { color: #b8956b; }
+
+    .hyh_toolbar .hyh_btn {
+      padding: 10px 18px;
+      border: 2px solid #8b5a2b;
+      border-radius: 24px;
+      background: #fff;
+      color: #6b4423;
+      font-family: inherit;
+      font-size: 0.92rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.25s, color 0.25s, transform 0.15s;
+    }
+
+    .hyh_toolbar .hyh_btn:hover {
+      background: #8b5a2b;
+      color: #fff;
+      transform: translateY(-1px);
+    }
+
+    .hyh_toolbar .hyh_btn:active { transform: translateY(0); }
+
+    .hyh_toolbar .hyh_btn.primary {
+      background: #8b5a2b;
+      color: #fff;
+    }
+
+    .hyh_toolbar .hyh_btn.primary:hover {
+      background: #6b4423;
+      border-color: #6b4423;
+    }
+
+    /* 搜索结果计数 */
+    .hyh_result_count {
+      margin-left: auto;
+      color: #8b5a2b;
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+
+    /* 空结果提示 */
+    .hyh_empty_hint {
+      text-align: center;
+      padding: 60px 20px;
+      color: #8b5a2b;
+      font-size: 1.05rem;
+    }
+
+    .hyh_empty_hint .hyh_empty_emoji {
+      font-size: 3rem;
+      display: block;
+      margin-bottom: 12px;
+    }
+
+    /* 页脚 */
+    .hyh_page_footer {
+      text-align: center;
+      margin-top: 50px;
+      color: #8b5a2b;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <header class="hyh_page_header">
+    <!-- 返回首页超链接（规则要求）：从 db/ 出发向上两级到项目根，再进 index/（黄煜涵） -->
+    <a href="../../index/index.html" class="hyh_home_link">🏠 返回首页</a>
+    <h1 class="hyh_page_title">古风诗词</h1>
+    <p class="hyh_page_subtitle">上图下文 · 数据来自本地服务器</p>
+    <p class="hyh_server_hint">
+      请先启动数据服务器：<code>cd db</code> → <code>node server.js</code>（端口 3004）
+    </p>
+  </header>
+
+  <!-- ========== 任务三：工具栏（黄煜涵） ========== -->
+  <div class="hyh_toolbar">
+    <div class="hyh_search_box">
+      <span class="hyh_search_icon">🔍</span>
+      <input type="text" id="hyhSearchInput" class="hyh_search_input"
+             placeholder="输入关键字，搜索标题或诗词内容...">
+    </div>
+    <button class="hyh_btn" id="hyhSortBtn">📏 按标题长度排序</button>
+    <button class="hyh_btn" id="hyhResetBtn">↺ 重置</button>
+    <span class="hyh_result_count" id="hyhResultCount">—</span>
+  </div>
+
+  <main class="hyh_poems_container" id="hyhPoemsContainer">
+    <div class="hyh_loading">⏳ 正在从服务器加载诗词数据...</div>
+  </main>
+
+  <footer class="hyh_page_footer">
+    作者：黄煜涵 · 2026-11-13 · Trae AI Assistant
+  </footer>
+
+  <script>
+    // ========== hyh_ 前缀 JS 变量/函数 ==========
+
+    // 服务器地址（黄煜涵）
+    const HYH_SERVER_BASE = 'http://localhost:3004';
+    const HYH_POEMS_API = `${HYH_SERVER_BASE}/api/poems`;
+    const HYH_AUTHORS_API = `${HYH_SERVER_BASE}/api/authors`;
+
+    // 容器 DOM 引用（黄煜涵）
+    const hyhContainer = document.getElementById('hyhPoemsContainer');
+    const hyhSearchInput = document.getElementById('hyhSearchInput');
+    const hyhSortBtn = document.getElementById('hyhSortBtn');
+    const hyhResetBtn = document.getElementById('hyhResetBtn');
+    const hyhResultCount = document.getElementById('hyhResultCount');
+
+    // ========== 任务三：全局缓存 + 排序状态（黄煜涵） ==========
+    // 原始数据缓存：fetch 完存这里，搜索/排序只操作副本，不重新请求
+    let hyh_allPoems = [];
+    let hyh_allAuthors = [];
+    // 排序状态：null=未排序，'asc'=短→长，'desc'=长→短，下次点击切换
+    let hyh_sortState = null;
+
+    // 渲染单首诗词卡片（黄煜涵）
+    function hyhRenderPoemCard(poem, authorInfo) {
+      const card = document.createElement('article');
+      card.className = 'hyh_poem_card';
+
+      // 图片地址拼接服务器 base（黄煜涵）
+      const imageUrl = `${HYH_SERVER_BASE}${poem.image}`;
+
+      // 如果有作者信息，生成代表作品 HTML（黄煜涵）
+      let authorWorksHtml = '';
+      if (authorInfo && authorInfo.works) {
+        const worksHtml = authorInfo.works.slice(0, 3).map(w => `<span class="hyh_work_tag">${w}</span>`).join('');
+        authorWorksHtml = `<div class="hyh_author_works">代表作品：${worksHtml}</div>`;
+      }
+
+      card.innerHTML = `
+        <div class="hyh_poem_image_wrapper">
+          <img src="${imageUrl}" alt="${poem.title}" class="hyh_poem_image"
+               onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22><rect fill=%22%23e8d5b7%22 width=%22400%22 height=%22300%22/><text x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 fill=%22%238b5a2b%22 font-size=%2220%22 font-family=%22serif%22>图片加载中...</text></svg>';">
+        </div>
+        <div class="hyh_poem_content_area">
+          <p class="hyh_poem_author">${poem.author}</p>
+          <h2 class="hyh_poem_title">${poem.title}</h2>
+          <p class="hyh_poem_body">${poem.content}</p>
+          ${authorWorksHtml}
+        </div>
+      `;
+      return card;
+    }
+
+    // 根据作者列表里的名字查找匹配信息（黄煜涵）
+    function hyhFindAuthorInfo(authorStr, authorsList) {
+      if (!authorsList) return null;
+      // authorStr 格式是 "唐·李白"，提取作者名字（黄煜涵）
+      const name = authorStr.includes('·') ? authorStr.split('·')[1] : authorStr;
+      return authorsList.find(a => a.name === name) || null;
+    }
+
+    // 渲染诗词列表（支持空结果提示）（黄煜涵）
+    function hyhRenderAllPoems(poems, authorsList) {
+      hyhContainer.innerHTML = '';
+      if (!poems || poems.length === 0) {
+        hyhContainer.innerHTML = `
+          <div class="hyh_empty_hint">
+            <span class="hyh_empty_emoji">🪷</span>
+            没有找到匹配的诗词，试试别的关键字？
+          </div>`;
+        hyhResultCount.textContent = '找到 0 首';
+        return;
+      }
+      poems.forEach(poem => {
+        const authorInfo = hyhFindAuthorInfo(poem.author, authorsList);
+        hyhContainer.appendChild(hyhRenderPoemCard(poem, authorInfo));
+      });
+      hyhResultCount.textContent = `共 ${poems.length} 首`;
+    }
+
+    // ========== 任务三：搜索（黄煜涵） ==========
+    // 按标题或内容关键字过滤，数据来自全局缓存，不重新 fetch
+    function hyhFilterPoems(keyword) {
+      if (!keyword) {
+        // 空关键字 → 恢复原始顺序（再应用当前排序状态）
+        hyhApplyFilterAndSort();
+        return;
+      }
+      const kw = keyword.trim().toLowerCase();
+      // 只过滤，不排序；排序按钮再操作
+      const filtered = hyh_allPoems.filter(p =>
+        p.title.toLowerCase().includes(kw) ||
+        p.content.toLowerCase().includes(kw)
+      );
+      hyhRenderAllPoems(filtered, hyh_allAuthors);
+    }
+
+    // ========== 任务三：排序（黄煜涵） ==========
+    // 按标题字符长度排序，点击切换方向
+    function hyhSortPoemsByTitleLength() {
+      // 切换排序状态
+      if (hyh_sortState === null || hyh_sortState === 'desc') {
+        hyh_sortState = 'asc';        // 短 → 长
+      } else {
+        hyh_sortState = 'desc';       // 长 → 短
+      }
+      hyhSortBtn.textContent = hyh_sortState === 'asc'
+        ? '📏 标题短 → 长'
+        : '📏 标题长 → 短';
+      hyhSortBtn.classList.add('primary');
+      hyhApplyFilterAndSort();
+    }
+
+    // 组合搜索 + 排序，基于当前搜索框内容和排序状态（黄煜涵）
+    function hyhApplyFilterAndSort() {
+      let list = hyh_allPoems.slice();   // 复制副本，不污染原始数据
+      const kw = hyhSearchInput.value.trim().toLowerCase();
+      if (kw) {
+        list = list.filter(p =>
+          p.title.toLowerCase().includes(kw) ||
+          p.content.toLowerCase().includes(kw)
+        );
+      }
+      if (hyh_sortState === 'asc') {
+        list.sort((a, b) => a.title.length - b.title.length);
+      } else if (hyh_sortState === 'desc') {
+        list.sort((a, b) => b.title.length - a.title.length);
+      }
+      hyhRenderAllPoems(list, hyh_allAuthors);
+    }
+
+    // ========== 任务三：重置（黄煜涵） ==========
+    function hyhResetPoems() {
+      hyhSearchInput.value = '';
+      hyh_sortState = null;
+      hyhSortBtn.textContent = '📏 按标题长度排序';
+      hyhSortBtn.classList.remove('primary');
+      hyhRenderAllPoems(hyh_allPoems, hyh_allAuthors);
+    }
+
+    // 显示错误提示（黄煜涵）
+    function hyhShowError(msg) {
+      hyhContainer.innerHTML = `
+        <div class="hyh_error">
+          ❌ ${msg}
+          <br><br>
+          <strong>请检查：</strong>
+          <br>1. 数据服务器是否已启动（运行 <code>db/server.js</code>）
+          <br>2. 服务器端口是否为 3004
+          <br><br>
+          <button class="hyh_retry_btn" onclick="hyhFetchAllData()">🔄 重新加载</button>
+        </div>
+      `;
+      hyhResultCount.textContent = '—';
+    }
+
+    // 从服务器并发获取诗词和作者两组数据（Promise.all 同时请求两个接口）（黄煜涵）
+    async function hyhFetchAllData() {
+      hyhContainer.innerHTML = '<div class="hyh_loading">⏳ 正在从服务器并发加载诗词和作者数据...</div>';
+      hyhResultCount.textContent = '加载中...';
+      try {
+        // Promise.all 同时发起两个 fetch 请求，谁慢等谁，全部完成才往下走（黄煜涵）
+        const [hyhPoemsRes, hyhAuthorsRes] = await Promise.all([
+          fetch(HYH_POEMS_API),
+          fetch(HYH_AUTHORS_API),
+        ]);
+
+        // 分别检查两个响应的状态码
+        if (!hyhPoemsRes.ok) throw new Error(`诗词接口 HTTP ${hyhPoemsRes.status}`);
+        if (!hyhAuthorsRes.ok) throw new Error(`作者接口 HTTP ${hyhAuthorsRes.status}`);
+
+        // 分别解析 JSON
+        const hyhPoemsList = await hyhPoemsRes.json();
+        const hyhAuthorsList = await hyhAuthorsRes.json();
+
+        if (!hyhPoemsList || hyhPoemsList.length === 0) {
+          throw new Error('/api/poems 没有返回数据');
+        }
+
+        // 缓存到全局变量（任务三要求：搜索/排序不重新 fetch）（黄煜涵）
+        hyh_allPoems = hyhPoemsList;
+        hyh_allAuthors = hyhAuthorsList;
+
+        // 首次渲染（原始顺序）
+        hyhRenderAllPoems(hyh_allPoems, hyh_allAuthors);
+
+        console.log('✅ Promise.all 并发请求成功：诗词', hyhPoemsList.length, '首，作者', hyhAuthorsList.length, '位');
+      } catch (hyhErr) {
+        hyhShowError(`加载失败：${hyhErr.message}`);
+      }
+    }
+
+    // ========== 任务三：事件绑定（黄煜涵） ==========
+    // 搜索框：输入实时过滤（节流 100ms，避免每敲一个字都触发）
+    let hyhSearchTimer = null;
+    hyhSearchInput.addEventListener('input', function () {
+      clearTimeout(hyhSearchTimer);
+      hyhSearchTimer = setTimeout(() => hyhApplyFilterAndSort(), 120);
+    });
+    // 排序按钮
+    hyhSortBtn.addEventListener('click', hyhSortPoemsByTitleLength);
+    // 重置按钮
+    hyhResetBtn.addEventListener('click', hyhResetPoems);
+
+    // 页面加载后自动并发获取数据（黄煜涵）
+    hyhFetchAllData();
+  </script>
+</body>
+</html>

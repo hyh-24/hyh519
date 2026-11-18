@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <!-- 背景：黄河远上白日依山 -->
+  <defs>
+    <linearGradient id="duskSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ff6b35"/>
+      <stop offset="30%" stop-color="#ff9f43"/>
+      <stop offset="60%" stop-color="#feca57"/>
+      <stop offset="100%" stop-color="#ffdbac"/>
+    </linearGradient>
+    <linearGradient id="yellowRiver" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d4a017"/>
+      <stop offset="100%" stop-color="#b8860b"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#duskSky)"/>
+  <!-- 太阳 -->
+  <circle cx="400" cy="280" r="45" fill="#ff4500"/>
+  <circle cx="400" cy="280" r="40" fill="#ff6347"/>
+  <!-- 云 -->
+  <ellipse cx="150" cy="100" rx="80" ry="20" fill="#ffcc00" opacity="0.5"/>
+  <ellipse cx="650" cy="150" rx="100" ry="25" fill="#ffcc00" opacity="0.4"/>
+  <ellipse cx="300" cy="180" rx="60" ry="15" fill="#fff" opacity="0.3"/>
+  <!-- 远山（层叠） -->
+  <path d="M0,350 L100,280 L200,320 L350,260 L500,310 L650,270 L800,300 L800,600 L0,600 Z" fill="#5d4e37" opacity="0.8"/>
+  <path d="M0,400 L150,340 L300,380 L450,320 L600,360 L800,330 L800,600 L0,600 Z" fill="#4a3f2e"/>
+  <!-- 高楼（鹳雀楼风格） -->
+  <g transform="translate(500, 250)">
+    <!-- 第一层台基 -->
+    <rect x="-80" y="200" width="160" height="30" fill="#8b7355"/>
+    <!-- 第一层楼体 -->
+    <rect x="-60" y="150" width="120" height="50" fill="#c9a96e"/>
+    <!-- 第一层屋顶 -->
+    <polygon points="-75,150 0,110 75,150" fill="#5d4037"/>
+    <!-- 第一层窗户 -->
+    <rect x="-40" y="160" width="15" height="25" fill="#2a1a0d" stroke="#5d4037" stroke-width="1"/>
+    <rect x="-10" y="160" width="15" height="25" fill="#2a1a0d" stroke="#5d4037" stroke-width="1"/>
+    <rect x="20" y="160" width="15" height="25" fill="#2a1a0d" stroke="#5d4037" stroke-width="1"/>
+    <!-- 第二层楼体 -->
+    <rect x="-45" y="90" width="90" height="50" fill="#d4b77a"/>
+    <!-- 第二层屋顶 -->
+    <polygon points="-60,90 0,50 60,90" fill="#4e342e"/>
+    <!-- 第二层窗户 -->
+    <rect x="-25" y="100" width="15" height="25" fill="#2a1a0d" stroke="#4e342e" stroke-width="1"/>
+    <rect x="10" y="100" width="15" height="25" fill="#2a1a0d" stroke="#4e342e" stroke-width="1"/>
+    <!-- 第三层楼体 -->
+    <rect x="-30" y="30" width="60" height="50" fill="#e0c98a"/>
+    <!-- 第三层屋顶 -->
+    <polygon points="-45,30 0,-10 45,30" fill="#3e2723"/>
+    <!-- 第三层窗户 -->
+    <rect x="-15" y="40" width="10" height="20" fill="#2a1a0d" stroke="#3e2723" stroke-width="1"/>
+    <rect x="5" y="40" width="10" height="20" fill="#2a1a0d" stroke="#3e2723" stroke-width="1"/>
+    <!-- 顶端装饰 -->
+    <line x1="0" y1="-10" x2="0" y2="-35" stroke="#3e2723" stroke-width="3"/>
+    <circle cx="0" cy="-40" r="6" fill="#c9a96e"/>
+  </g>
+  <!-- 黄河 -->
+  <path d="M0,480 Q200,470 400,480 Q600,490 800,475 L800,600 L0,600 Z" fill="url(#yellowRiver)"/>
+  <!-- 黄河波浪线 -->
+  <path d="M0,485 Q100,478 200,485 Q300,492 400,485 Q500,478 600,485 Q700,492 800,485" stroke="#8b6914" stroke-width="1.5" fill="none" opacity="0.6"/>
+  <path d="M0,500 Q150,494 300,500 Q450,506 600,500 Q700,496 800,500" stroke="#8b6914" stroke-width="1" fill="none" opacity="0.5"/>
+  <!-- 远景树 -->
+  <g fill="#5d4037" opacity="0.8">
+    <rect x="250" y="420" width="3" height="30"/>
+    <ellipse cx="252" cy="415" rx="15" ry="12"/>
+    <rect x="380" y="410" width="3" height="35"/>
+    <ellipse cx="382" cy="404" rx="18" ry="14"/>
+  </g>
+  <!-- 地面 -->
+  <rect x="0" y="510" width="800" height="90" fill="#7a6a4a"/>
+  <!-- 印章 -->
+  <text x="700" y="560" font-family="serif" font-size="18" fill="#c0392b" opacity="0.6">登鹳雀楼</text>
+</svg>

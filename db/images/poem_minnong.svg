@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <!-- 背景：农田 -->
+  <defs>
+    <linearGradient id="farmSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fbc02d"/>
+      <stop offset="50%" stop-color="#f57f17"/>
+      <stop offset="100%" stop-color="#e65100"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#farmSky)"/>
+  <!-- 太阳 -->
+  <circle cx="650" cy="100" r="50" fill="#ff6f00"/>
+  <circle cx="650" cy="100" r="40" fill="#ffc107"/>
+  <!-- 远山 -->
+  <path d="M0,300 L150,220 L300,280 L450,200 L600,260 L800,240 L800,380 L0,380 Z" fill="#8d6e63" opacity="0.6"/>
+  <!-- 农田 -->
+  <rect x="0" y="380" width="800" height="220" fill="#8d6e63"/>
+  <!-- 田埂 -->
+  <g stroke="#6d4c41" stroke-width="3" fill="none">
+    <path d="M0,420 L800,420"/>
+    <path d="M0,470 L800,470"/>
+    <path d="M0,520 L800,520"/>
+    <path d="M100,380 L100,600"/>
+    <path d="M300,380 L300,600"/>
+    <path d="M500,380 L500,600"/>
+    <path d="M700,380 L700,600"/>
+  </g>
+  <!-- 稻穗/庄稼 -->
+  <g fill="#2e7d32">
+    <ellipse cx="50" cy="440" rx="12" ry="30"/>
+    <ellipse cx="120" cy="440" rx="12" ry="30"/>
+    <ellipse cx="180" cy="440" rx="12" ry="30"/>
+    <ellipse cx="350" cy="440" rx="12" ry="30"/>
+    <ellipse cx="420" cy="440" rx="12" ry="30"/>
+    <ellipse cx="550" cy="440" rx="12" ry="30"/>
+    <ellipse cx="620" cy="440" rx="12" ry="30"/>
+    <ellipse cx="750" cy="440" rx="12" ry="30"/>
+  </g>
+  <g fill="#388e3c">
+    <ellipse cx="70" cy="490" rx="12" ry="30"/>
+    <ellipse cx="240" cy="490" rx="12" ry="30"/>
+    <ellipse cx="370" cy="490" rx="12" ry="30"/>
+    <ellipse cx="570" cy="490" rx="12" ry="30"/>
+    <ellipse cx="680" cy="490" rx="12" ry="30"/>
+  </g>
+  <g fill="#43a047">
+    <ellipse cx="150" cy="540" rx="12" ry="30"/>
+    <ellipse cx="320" cy="540" rx="12" ry="30"/>
+    <ellipse cx="480" cy="540" rx="12" ry="30"/>
+    <ellipse cx="640" cy="540" rx="12" ry="30"/>
+  </g>
+  <!-- 农民 -->
+  <g transform="translate(200, 340)">
+    <!-- 草帽 -->
+    <ellipse cx="0" cy="0" rx="35" ry="8" fill="#8d6e63"/>
+    <ellipse cx="0" cy="-5" rx="18" ry="12" fill="#a1887f"/>
+    <!-- 头 -->
+    <circle cx="0" cy="5" r="10" fill="#f5deb3"/>
+    <!-- 身体 -->
+    <rect x="-12" y="15" width="24" height="30" fill="#d32f2f"/>
+    <!-- 手臂（弯腰） -->
+    <line x1="12" y1="20" x2="25" y2="35" stroke="#d32f2f" stroke-width="5"/>
+    <line x1="-12" y1="20" x2="-25" y2="35" stroke="#d32f2f" stroke-width="5"/>
+    <!-- 腿 -->
+    <line x1="-6" y1="45" x2="-6" y2="70" stroke="#37474f" stroke-width="5"/>
+    <line x1="6" y1="45" x2="6" y2="70" stroke="#37474f" stroke-width="5"/>
+  </g>
+  <!-- 农民 2 -->
+  <g transform="translate(550, 345)">
+    <ellipse cx="0" cy="0" rx="30" ry="7" fill="#8d6e63"/>
+    <ellipse cx="0" cy="-4" rx="15" ry="10" fill="#a1887f"/>
+    <circle cx="0" cy="4" r="9" fill="#f5deb3"/>
+    <rect x="-10" y="12" width="20" height="25" fill="#1565c0"/>
+    <line x1="10" y1="17" x2="22" y2="30" stroke="#1565c0" stroke-width="4"/>
+    <line x1="-10" y1="17" x2="-22" y2="30" stroke="#1565c0" stroke-width="4"/>
+    <line x1="-5" y1="37" x2="-5" y2="60" stroke="#37474f" stroke-width="4"/>
+    <line x1="5" y1="37" x2="5" y2="60" stroke="#37474f" stroke-width="4"/>
+  </g>
+  <!-- 印章 -->
+  <text x="700" y="580" font-family="serif" font-size="18" fill="#c0392b" opacity="0.6">悯农</text>
+</svg>

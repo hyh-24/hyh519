@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <!-- 背景：夜空渐变 -->
+  <defs>
+    <linearGradient id="nightSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0d1b3e"/>
+      <stop offset="50%" stop-color="#1a2d5a"/>
+      <stop offset="100%" stop-color="#3d3059"/>
+    </linearGradient>
+    <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fffde7"/>
+      <stop offset="40%" stop-color="#fef9c3"/>
+      <stop offset="100%" stop-color="#e8d5b7" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#nightSky)"/>
+  <!-- 星星 -->
+  <circle cx="100" cy="80" r="1.5" fill="#fff"/>
+  <circle cx="200" cy="120" r="1" fill="#fff"/>
+  <circle cx="650" cy="60" r="1.5" fill="#fff"/>
+  <circle cx="700" cy="150" r="1" fill="#fff"/>
+  <circle cx="50" cy="200" r="1" fill="#fff"/>
+  <circle cx="750" cy="250" r="1" fill="#fff"/>
+  <!-- 月亮光晕 -->
+  <circle cx="600" cy="150" r="120" fill="url(#moonGlow)"/>
+  <!-- 月亮本体 -->
+  <circle cx="600" cy="150" r="60" fill="#fffde7"/>
+  <circle cx="580" cy="130" r="8" fill="#f5f0d0" opacity="0.5"/>
+  <circle cx="610" cy="160" r="12" fill="#f5f0d0" opacity="0.4"/>
+  <!-- 远山 -->
+  <path d="M0,400 L150,320 L300,380 L450,300 L600,360 L800,340 L800,600 L0,600 Z" fill="#1a2644"/>
+  <path d="M0,440 L200,380 L400,420 L600,370 L800,410 L800,600 L0,600 Z" fill="#0f1a33"/>
+  <!-- 地面（像霜） -->
+  <rect x="0" y="480" width="800" height="120" fill="#e8dcc8" opacity="0.9"/>
+  <rect x="0" y="480" width="800" height="120" fill="url(#moonGlow)" opacity="0.3"/>
+  <!-- 古风小屋 -->
+  <g transform="translate(320, 380)">
+    <!-- 屋顶 -->
+    <polygon points="0,0 80,-50 160,0" fill="#3d2817"/>
+    <polygon points="10,-5 80,-45 150,-5" fill="#5a3a24"/>
+    <!-- 墙壁 -->
+    <rect x="15" y="0" width="130" height="80" fill="#8b6a4a"/>
+    <!-- 门 -->
+    <rect x="60" y="30" width="40" height="50" fill="#3d2817"/>
+    <!-- 窗 -->
+    <rect x="25" y="20" width="25" height="20" fill="#2a1a0d" stroke="#8b6a4a" stroke-width="2"/>
+    <rect x="110" y="20" width="25" height="20" fill="#2a1a0d" stroke="#8b6a4a" stroke-width="2"/>
+  </g>
+  <!-- 树 -->
+  <g transform="translate(150, 360)">
+    <rect x="0" y="0" width="6" height="120" fill="#2a1a0d"/>
+    <ellipse cx="3" cy="-10" rx="40" ry="50" fill="#0f2a1a"/>
+    <ellipse cx="-15" cy="0" rx="30" ry="40" fill="#143024"/>
+    <ellipse cx="20" cy="5" rx="30" ry="45" fill="#0d2418"/>
+  </g>
+  <!-- 月光洒落效果 -->
+  <rect x="0" y="480" width="800" height="120" fill="#fffde7" opacity="0.15"/>
+  <!-- 印章 -->
+  <text x="720" y="560" font-family="serif" font-size="18" fill="#c0392b" opacity="0.6">静夜思</text>
+</svg>
