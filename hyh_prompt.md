@@ -920,3 +920,13 @@ C:\Users\HYH\Desktop\网页设计\webhyh把这个文件夹提交到github
 - **提示词内容**:
 
 好的，执行吧（把 mobile-homework.html 等文件挪到仓库根目录，解决 GitHub Pages URL 404 问题）
+
+---
+### 提示词日志 #85
+
+- **时间**: 2026-11-18 13:00:00
+- **模型**: Trae (AI Assistant)
+- **任务类型**: 提交到 GitHub
+- **提示词内容**:
+
+提交到github上面
