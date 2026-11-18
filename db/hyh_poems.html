@@ -306,8 +306,8 @@
 </head>
 <body>
   <header class="hyh_page_header">
-    <!-- 返回首页超链接（规则要求）：从 db/ 出发向上两级到项目根，再进 index/（黄煜涵） -->
-    <a href="../../index/index.html" class="hyh_home_link">🏠 返回首页</a>
+    <!-- 返回首页超链接（规则要求）：从 db/ 出发向上一级到项目根，再进 index/（黄煜涵） -->
+    <a href="../index/index.html" class="hyh_home_link">🏠 返回首页</a>
     <h1 class="hyh_page_title">古风诗词</h1>
     <p class="hyh_page_subtitle">上图下文 · 数据来自本地服务器</p>
     <p class="hyh_server_hint">
@@ -338,10 +338,12 @@
   <script>
     // ========== hyh_ 前缀 JS 变量/函数 ==========
 
-    // 服务器地址（黄煜涵）
+    // 本地 Node 服务器地址（优先用；不可用时 fallback 到同目录 db.json，GitHub Pages 友好）
     const HYH_SERVER_BASE = 'http://localhost:3004';
     const HYH_POEMS_API = `${HYH_SERVER_BASE}/api/poems`;
     const HYH_AUTHORS_API = `${HYH_SERVER_BASE}/api/authors`;
+    // 同目录 db.json（Fallback 数据源）—— 在 GitHub Pages / 直接打开文件时生效（黄煜涵）
+    const HYH_DB_JSON = './db.json';
 
     // 容器 DOM 引用（黄煜涵）
     const hyhContainer = document.getElementById('hyhPoemsContainer');
@@ -356,14 +358,25 @@
     let hyh_allAuthors = [];
     // 排序状态：null=未排序，'asc'=短→长，'desc'=长→短，下次点击切换
     let hyh_sortState = null;
+    // 数据源标记：true=本地 Node 服务器成功、false=fallback db.json（黄煜涵）
+    let hyh_serverAvailable = false;
+
+    // 图片地址：本地服务器走绝对 URL，否则转为相对路径 ./images/xxx.svg（黄煜涵）
+    function hyhResolveImageUrl(imagePath, serverAvailable) {
+      if (serverAvailable) {
+        return `${HYH_SERVER_BASE}${imagePath}`;
+      }
+      // 把 db.json 里的 "/images/xxx.svg" 转成 "./images/xxx.svg" 相对路径（GitHub Pages / 本地直接打开都能用）
+      const rel = imagePath.startsWith('/') ? `.${imagePath}` : imagePath;
+      return rel;
+    }
 
     // 渲染单首诗词卡片（黄煜涵）
-    function hyhRenderPoemCard(poem, authorInfo) {
+    function hyhRenderPoemCard(poem, authorInfo, serverAvailable) {
       const card = document.createElement('article');
       card.className = 'hyh_poem_card';
 
-      // 图片地址拼接服务器 base（黄煜涵）
-      const imageUrl = `${HYH_SERVER_BASE}${poem.image}`;
+      const imageUrl = hyhResolveImageUrl(poem.image, serverAvailable);
 
       // 如果有作者信息，生成代表作品 HTML（黄煜涵）
       let authorWorksHtml = '';
@@ -396,7 +409,7 @@
     }
 
     // 渲染诗词列表（支持空结果提示）（黄煜涵）
-    function hyhRenderAllPoems(poems, authorsList) {
+    function hyhRenderAllPoems(poems, authorsList, serverAvailable) {
       hyhContainer.innerHTML = '';
       if (!poems || poems.length === 0) {
         hyhContainer.innerHTML = `
@@ -409,7 +422,7 @@
       }
       poems.forEach(poem => {
         const authorInfo = hyhFindAuthorInfo(poem.author, authorsList);
-        hyhContainer.appendChild(hyhRenderPoemCard(poem, authorInfo));
+        hyhContainer.appendChild(hyhRenderPoemCard(poem, authorInfo, serverAvailable));
       });
       hyhResultCount.textContent = `共 ${poems.length} 首`;
     }
@@ -428,7 +441,7 @@
         p.title.toLowerCase().includes(kw) ||
         p.content.toLowerCase().includes(kw)
       );
-      hyhRenderAllPoems(filtered, hyh_allAuthors);
+      hyhRenderAllPoems(filtered, hyh_allAuthors, hyh_serverAvailable);
     }
 
     // ========== 任务三：排序（黄煜涵） ==========
@@ -462,7 +475,7 @@
       } else if (hyh_sortState === 'desc') {
         list.sort((a, b) => b.title.length - a.title.length);
       }
-      hyhRenderAllPoems(list, hyh_allAuthors);
+      hyhRenderAllPoems(list, hyh_allAuthors, hyh_serverAvailable);
     }
 
     // ========== 任务三：重置（黄煜涵） ==========
@@ -471,7 +484,7 @@
       hyh_sortState = null;
       hyhSortBtn.textContent = '📏 按标题长度排序';
       hyhSortBtn.classList.remove('primary');
-      hyhRenderAllPoems(hyh_allPoems, hyh_allAuthors);
+      hyhRenderAllPoems(hyh_allPoems, hyh_allAuthors, hyh_serverAvailable);
     }
 
     // 显示错误提示（黄煜涵）
@@ -490,39 +503,56 @@
       hyhResultCount.textContent = '—';
     }
 
-    // 从服务器并发获取诗词和作者两组数据（Promise.all 同时请求两个接口）（黄煜涵）
+    // 从本地 Node 服务器并发获取数据（Promise.all）；失败则 fallback 到同目录 db.json（GitHub Pages 友好）（黄煜涵）
     async function hyhFetchAllData() {
-      hyhContainer.innerHTML = '<div class="hyh_loading">⏳ 正在从服务器并发加载诗词和作者数据...</div>';
+      hyhContainer.innerHTML = '<div class="hyh_loading">⏳ 正在加载诗词数据...</div>';
       hyhResultCount.textContent = '加载中...';
+
+      // 第一步：尝试本地 Node 服务器（localhost:3004）
       try {
-        // Promise.all 同时发起两个 fetch 请求，谁慢等谁，全部完成才往下走（黄煜涵）
         const [hyhPoemsRes, hyhAuthorsRes] = await Promise.all([
           fetch(HYH_POEMS_API),
           fetch(HYH_AUTHORS_API),
         ]);
 
-        // 分别检查两个响应的状态码
-        if (!hyhPoemsRes.ok) throw new Error(`诗词接口 HTTP ${hyhPoemsRes.status}`);
-        if (!hyhAuthorsRes.ok) throw new Error(`作者接口 HTTP ${hyhAuthorsRes.status}`);
+        if (!hyhPoemsRes.ok) throw new Error(`HTTP ${hyhPoemsRes.status}`);
+        if (!hyhAuthorsRes.ok) throw new Error(`HTTP ${hyhAuthorsRes.status}`);
 
-        // 分别解析 JSON
         const hyhPoemsList = await hyhPoemsRes.json();
         const hyhAuthorsList = await hyhAuthorsRes.json();
 
         if (!hyhPoemsList || hyhPoemsList.length === 0) {
-          throw new Error('/api/poems 没有返回数据');
+          throw new Error('/api/poems 空数据');
         }
 
-        // 缓存到全局变量（任务三要求：搜索/排序不重新 fetch）（黄煜涵）
+        hyh_serverAvailable = true;
         hyh_allPoems = hyhPoemsList;
         hyh_allAuthors = hyhAuthorsList;
-
-        // 首次渲染（原始顺序）
-        hyhRenderAllPoems(hyh_allPoems, hyh_allAuthors);
-
+        hyhRenderAllPoems(hyh_allPoems, hyh_allAuthors, hyh_serverAvailable);
         console.log('✅ Promise.all 并发请求成功：诗词', hyhPoemsList.length, '首，作者', hyhAuthorsList.length, '位');
-      } catch (hyhErr) {
-        hyhShowError(`加载失败：${hyhErr.message}`);
+        return;
+      } catch (hyhServerErr) {
+        console.warn('⚠️ 本地服务器不可用（', hyhServerErr.message, '），切换到 db.json fallback...');
+      }
+
+      // 第二步：fallback —— 直接 fetch 同目录 db.json（GitHub Pages / 本地直接打开都能用）
+      try {
+        const hyhDbRes = await fetch(HYH_DB_JSON);
+        if (!hyhDbRes.ok) throw new Error(`db.json HTTP ${hyhDbRes.status}`);
+        const hyhDb = await hyhDbRes.json();
+
+        hyh_serverAvailable = false;
+        hyh_allPoems = hyhDb.poems || [];
+        hyh_allAuthors = hyhDb.authors || [];
+
+        if (hyh_allPoems.length === 0) {
+          throw new Error('db.json 里 poems 为空');
+        }
+        hyhRenderAllPoems(hyh_allPoems, hyh_allAuthors, hyh_serverAvailable);
+        console.log('✅ db.json fallback 成功：诗词', hyh_allPoems.length, '首，作者', hyh_allAuthors.length, '位');
+      } catch (hyhDbErr) {
+        // 两种方式都失败了，显示错误提示
+        hyhShowError(`两种数据源都不可用 —— 服务器：${hyhServerErr?.message || '未知'}，db.json：${hyhDbErr.message}`);
       }
     }
 
