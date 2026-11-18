@@ -940,3 +940,23 @@ C:\Users\HYH\Desktop\网页设计\webhyh把这个文件夹提交到github
 - **提示词内容**:
 
 C:\Users\HYH\Desktop\webhyh\db\hyh_poems.html这个网站不对
+
+---
+### 提示词日志 #87
+
+- **时间**: 2026-11-18 13:25:00
+- **模型**: Trae (AI Assistant)
+- **任务类型**: 验证/检查
+- **提示词内容**:
+
+帮我检查 GitHub 缓存是否已刷新
+
+---
+### 提示词日志 #88
+
+- **时间**: 2026-11-18 13:35:00
+- **模型**: Trae (AI Assistant)
+- **任务类型**: 提交到 GitHub
+- **提示词内容**:
+
+把这个文件夹提交到github
