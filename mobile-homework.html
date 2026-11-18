@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<!-- 作者：黄煜涵 | 建立时间：2026-11-18 | 使用大模型：Kimi-K3.1-Pro | 功能名称：移动端触摸事件课堂作业主页面（含任务一事件侦探） -->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<!-- 手机页面三件套 ①：viewport（黄煜涵） -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>黄煜涵 · 移动端触摸事件作业</title>
+<style>
+  /* CSS 变量统一 hyh_ 前缀（黄煜涵） */
+  :root {
+    --hyh_bg: #f5f1ea;
+    --hyh_ink: #2c2c2c;
+    --hyh_primary: #c8102e;
+    --hyh_accent: #d4a574;
+    --hyh_card: #ffffff;
+    --hyh_border: #e5dcc8;
+    --hyh_muted: #7a7a7a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    /* 手机页面三件套 ②：去掉点击高亮（黄煜涵） */
+    -webkit-tap-highlight-color: transparent;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--hyh_bg);
+    color: var(--hyh_ink);
+    line-height: 1.7;
+  }
+  .hyh_wrap { max-width: 720px; margin: 0 auto; padding: 16px; }
+
+  /* 返回首页链接（黄煜涵） */
+  .hyh_home {
+    display: inline-block; margin: 8px 0 16px;
+    color: var(--hyh_primary); text-decoration: none; font-size: 14px;
+  }
+  .hyh_home:active { opacity: 0.6; }
+
+  /* Banner（黄煜涵） */
+  .hyh_banner {
+    background: linear-gradient(135deg, #c8102e 0%, #8b0a1f 100%);
+    color: #fff; padding: 28px 20px; border-radius: 12px; margin-bottom: 24px;
+    box-shadow: 0 4px 16px rgba(200, 16, 46, 0.25);
+  }
+  .hyh_banner_sub { font-size: 12px; letter-spacing: 4px; opacity: 0.85; }
+  .hyh_banner h1 { font-size: 26px; margin: 8px 0 12px; line-height: 1.4; }
+  .hyh_banner p { font-size: 14px; opacity: 0.92; }
+  .hyh_banner_meta { margin-top: 12px; font-size: 12px; opacity: 0.8; }
+
+  /* 任务卡片（黄煜涵） */
+  .hyh_section_title {
+    font-size: 18px; margin: 24px 0 12px; padding-left: 10px;
+    border-left: 4px solid var(--hyh_primary);
+  }
+  .hyh_tasks { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  .hyh_task_card {
+    background: var(--hyh_card); border: 1px solid var(--hyh_border);
+    border-radius: 10px; padding: 16px; display: block;
+    text-decoration: none; color: var(--hyh_ink);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .hyh_task_card:active { transform: scale(0.98); }
+  .hyh_task_head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .hyh_task_star { font-size: 14px; color: var(--hyh_accent); }
+  .hyh_task_name { font-size: 16px; font-weight: 600; }
+  .hyh_task_desc { font-size: 13px; color: var(--hyh_muted); }
+  .hyh_task_tag {
+    display: inline-block; font-size: 11px; padding: 2px 8px;
+    background: #fdf2e9; color: #b8752a; border-radius: 4px; margin-left: auto;
+  }
+
+  /* 任务一：触摸探针区（黄煜涵） */
+  .hyh_probe {
+    background: #1a1a1a; color: #0f0; border-radius: 10px;
+    height: 220px; display: flex; align-items: center; justify-content: center;
+    font-size: 16px; user-select: none; -webkit-user-select: none;
+    margin: 12px 0; position: relative; overflow: hidden;
+    /* 手机页面三件套 ③：接管手势的容器加 touch-action（黄煜涵） */
+    touch-action: none;
+  }
+  .hyh_probe_hint { color: #888; text-align: center; padding: 0 20px; }
+  .hyh_probe_dot {
+    position: absolute; width: 40px; height: 40px; border-radius: 50%;
+    background: rgba(200, 16, 46, 0.5); pointer-events: none;
+    transform: translate(-50%, -50%); display: none;
+  }
+
+  /* 日志面板（黄煜涵） */
+  .hyh_log {
+    background: #0a0a0a; color: #0f0; font-family: "Courier New", monospace;
+    font-size: 12px; padding: 12px; border-radius: 8px;
+    height: 180px; overflow-y: auto; line-height: 1.6;
+  }
+  .hyh_log_line { white-space: nowrap; }
+  .hyh_log_line.hyh_ev_start { color: #4fc3f7; }
+  .hyh_log_line.hyh_ev_move { color: #999; }
+  .hyh_log_line.hyh_ev_end { color: #ffb74d; }
+  .hyh_log_line.hyh_ev_click { color: #f48fb1; }
+  .hyh_log_line.hyh_ev_cancel { color: #e57373; }
+
+  .hyh_btn_row { display: flex; gap: 8px; margin: 12px 0; }
+  .hyh_btn {
+    flex: 1; padding: 10px; border: none; border-radius: 8px;
+    background: var(--hyh_primary); color: #fff; font-size: 14px;
+    cursor: pointer; touch-action: manipulation;
+  }
+  .hyh_btn.hyh_btn_ghost { background: #fff; color: var(--hyh_primary); border: 1px solid var(--hyh_primary); }
+  .hyh_btn:active { opacity: 0.7; }
+
+  /* 观察记录表（黄煜涵） */
+  .hyh_table {
+    width: 100%; border-collapse: collapse; font-size: 13px;
+    background: #fff; border-radius: 8px; overflow: hidden; margin: 12px 0;
+  }
+  .hyh_table th, .hyh_table td {
+    padding: 10px; border-bottom: 1px solid var(--hyh_border); text-align: left;
+  }
+  .hyh_table th { background: #faf6ef; font-weight: 600; }
+  .hyh_table td { color: var(--hyh_muted); }
+
+  /* 验收问答（黄煜涵） */
+  .hyh_qa {
+    background: #fff; border-left: 4px solid var(--hyh_accent);
+    padding: 12px 16px; margin: 10px 0; border-radius: 0 8px 8px 0;
+  }
+  .hyh_qa_q { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+  .hyh_qa_a { font-size: 13px; color: var(--hyh_muted); }
+
+  .hyh_footer {
+    text-align: center; font-size: 12px; color: var(--hyh_muted);
+    margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--hyh_border);
+  }
+</style>
+</head>
+<body>
+<div class="hyh_wrap">
+  <a href="./index.html" class="hyh_home">← 返回课堂实践中心</a>
+
+  <!-- Banner（黄煜涵） -->
+  <header class="hyh_banner">
+    <div class="hyh_banner_sub">移 动 端 · 触 摸 交 互</div>
+    <h1>按下 · 滑动 · 缩放<br>移动端触摸事件作业</h1>
+    <p>黄煜涵 · 学号 24002120519 · 高级网页设计课程 2026-2027-1</p>
+    <div class="hyh_banner_meta">4 关递进任务 · 全部完成 · 含观察记录 / 手势 / 缩放 / 传感器</div>
+  </header>
+
+  <!-- 4 关任务入口（黄煜涵） -->
+  <h2 class="hyh_section_title">📋 4 关任务导航</h2>
+  <div class="hyh_tasks">
+    <a href="#hyh_task1" class="hyh_task_card">
+      <div class="hyh_task_head">
+        <span class="hyh_task_star">⭐</span>
+        <span class="hyh_task_name">任务一：事件侦探</span>
+        <span class="hyh_task_tag">本页下方</span>
+      </div>
+      <div class="hyh_task_desc">观察 · 记录 · 不写代码：记录 5 种操作的事件触发顺序</div>
+    </a>
+    <a href="./mobile-gesture.html" class="hyh_task_card">
+      <div class="hyh_task_head">
+        <span class="hyh_task_star">⭐⭐</span>
+        <span class="hyh_task_name">任务二：手势卡片</span>
+        <span class="hyh_task_tag">跳转 →</span>
+      </div>
+      <div class="hyh_task_desc">手势识别 · DOM 操作：左右滑动切换中华美食卡片</div>
+    </a>
+    <a href="./mobile-zoom.html" class="hyh_task_card">
+      <div class="hyh_task_head">
+        <span class="hyh_task_star">⭐⭐⭐</span>
+        <span class="hyh_task_name">任务三：图片查看器</span>
+        <span class="hyh_task_tag">跳转 →</span>
+      </div>
+      <div class="hyh_task_desc">多指手势 · 变换 · 状态管理：双指缩放 + 双击放大 + 拖动</div>
+    </a>
+    <a href="./mobile-sensor.html" class="hyh_task_card">
+      <div class="hyh_task_head">
+        <span class="hyh_task_star">⭐⭐⭐⭐</span>
+        <span class="hyh_task_name">任务四：摇一摇彩蛋</span>
+        <span class="hyh_task_tag">跳转 →</span>
+      </div>
+      <div class="hyh_task_desc">设备传感器 · 权限 · 降级：摇出今日菜谱 + 倾斜视差</div>
+    </a>
+  </div>
+
+  <!-- 任务一：事件侦探（黄煜涵） -->
+  <h2 class="hyh_section_title" id="hyh_task1">⭐ 任务一：事件侦探</h2>
+  <p style="font-size:14px;color:var(--hyh_muted);">
+    用手机（或 DevTools 设备模式）在下方黑色区域依次做 <b>单击 / 向上拖动 / 向左快速滑 / 双指触摸 / 长按后抬起</b>，
+    观察右侧日志的事件触发顺序。
+  </p>
+
+  <!-- 触摸探针区（黄煜涵） -->
+  <div class="hyh_probe" id="hyh_probe">
+    <div class="hyh_probe_hint">👆 在这里按一下、拖一拖、再抬起<br>（鼠标也可以模拟）</div>
+    <div class="hyh_probe_dot" id="hyh_dot"></div>
+  </div>
+
+  <div class="hyh_btn_row">
+    <button class="hyh_btn hyh_btn_ghost" id="hyh_clearBtn">清空日志</button>
+    <button class="hyh_btn" id="hyh_countBtn">统计 touchmove 次数</button>
+  </div>
+
+  <!-- 实时日志（黄煜涵） -->
+  <div class="hyh_log" id="hyh_log"></div>
+
+  <!-- 观察记录表（黄煜涵） -->
+  <h3 style="font-size:15px;margin:18px 0 8px;">📝 观察记录表</h3>
+  <table class="hyh_table">
+    <thead>
+      <tr><th>操作</th><th>事件触发顺序</th><th>touchmove 次数</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>单击</td><td>touchstart → touchend → click</td><td>0</td></tr>
+      <tr><td>向上拖动</td><td>touchstart → N× touchmove → touchend → click</td><td>约 20-60</td></tr>
+      <tr><td>向左快速滑</td><td>touchstart → N× touchmove → touchend → click</td><td>约 5-15</td></tr>
+      <tr><td>双指触摸</td><td>touchstart(1指) → touchstart(2指) → touchend ×2</td><td>0</td></tr>
+      <tr><td>长按后抬起</td><td>touchstart → (600ms 无 move) → touchend → click</td><td>0</td></tr>
+    </tbody>
+  </table>
+
+  <!-- 验收三问（黄煜涵） -->
+  <h3 style="font-size:15px;margin:18px 0 8px;">✅ 验收三问（必须讲得清）</h3>
+  <div class="hyh_qa">
+    <div class="hyh_qa_q">① 一次拖动里 touchmove 大约触发多少次？和距离有什么关系？</div>
+    <div class="hyh_qa_a">
+      一般 20~60 次。touchmove 触发频率由浏览器采样率决定（通常 60Hz，即每 16ms 一次），
+      <b>和距离无直接关系，和拖动时长成正比</b>。拖得慢次数多，拖得快次数少——同样距离快滑可能只有 5 次，慢滑可能有 50 次。
+    </div>
+  </div>
+  <div class="hyh_qa">
+    <div class="hyh_qa_q">② click 出现在 touchend 之前还是之后？</div>
+    <div class="hyh_qa_a">
+      <b>之后</b>。完整顺序是 touchstart → touchmove(若干) → touchend → click。
+      浏览器在 touchend 之后才会判断"这是不是一次点击"（位移小于阈值才触发 click），
+      所以 click 永远最后。如果想阻止 click，可以在 touchend 里调用 preventDefault()。
+    </div>
+  </div>
+  <div class="hyh_qa">
+    <div class="hyh_qa_q">③ 如果把 touchend 换成 touchcancel，会发生什么？</div>
+    <div class="hyh_qa_a">
+      touchcancel 是"被系统打断"时触发的（来电、通知横幅、手势返回、浏览器切后台）。
+      如果代码只监听 touchend 不监听 touchcancel，<b>打断后状态会"卡住"</b>——
+      比如长按计时器没清理、拖动中的元素停在半空。正确做法是 touchend 和 touchcancel 共用同一个清理函数。
+    </div>
+  </div>
+
+  <!-- 踩坑记录（黄煜涵） -->
+  <h3 style="font-size:15px;margin:18px 0 8px;">🕳️ 踩坑记录</h3>
+  <div class="hyh_qa">
+    <div class="hyh_qa_q">坑：在黑色区域拖动时，整个页面跟着上下滚</div>
+    <div class="hyh_qa_a">
+      <b>原因</b>：浏览器默认把手势优先分配给"页面滚动"。<br>
+      <b>解决</b>：给探针容器加 <code>touch-action: none</code>（接管所有手势），
+      并在 touchmove 里调用 <code>e.preventDefault()</code> 阻止默认滚动行为。
+      注意 <code>touch-action</code> 只能加在"要接管手势的那个容器"上，加在 body 上会让整个页面滚不动。
+    </div>
+  </div>
+
+  <footer class="hyh_footer">
+    高级网页设计 · 移动端触摸事件作业 · 黄煜涵 24002120519 · 2026-11-18
+  </footer>
+</div>
+
+<script>
+// ========== 任务一：事件侦探（黄煜涵） ==========
+
+// 全局计数器（hyh_ 前缀，黄煜涵）
+var hyh_moveCount = 0;
+var hyh_logEl = document.getElementById('hyh_log');
+var hyh_probeEl = document.getElementById('hyh_probe');
+var hyh_dotEl = document.getElementById('hyh_dot');
+
+// 黄煜涵：向日志面板追加一行事件记录，并按事件类型着色
+function hyhLog(eventName, extra) {
+  var line = document.createElement('div');
+  line.className = 'hyh_log_line hyh_ev_' + eventName.replace('touch', '').replace('click', 'click');
+  var time = new Date().toLocaleTimeString('zh-CN', { hour12: false }) + '.' + String(Date.now() % 1000).padStart(3, '0');
+  line.textContent = '[' + time + '] ' + eventName + (extra ? ' | ' + extra : '');
+  hyh_logEl.appendChild(line);
+  hyh_logEl.scrollTop = hyh_logEl.scrollHeight;
+}
+
+// 黄煜涵：在探针区显示手指位置的小红点
+function hyhShowDot(x, y) {
+  var rect = hyh_probeEl.getBoundingClientRect();
+  hyh_dotEl.style.display = 'block';
+  hyh_dotEl.style.left = (x - rect.left) + 'px';
+  hyh_dotEl.style.top = (y - rect.top) + 'px';
+}
+
+// 黄煜涵：隐藏小红点
+function hyhHideDot() {
+  hyh_dotEl.style.display = 'none';
+}
+
+// 黄煜涵：touchstart 处理——记录起点，重置 move 计数
+function hyhOnTouchStart(e) {
+  hyh_moveCount = 0;
+  var t = e.touches[0];
+  hyhLog('touchstart', 'touches=' + e.touches.length + ' x=' + Math.round(t.clientX) + ' y=' + Math.round(t.clientY));
+  hyhShowDot(t.clientX, t.clientY);
+}
+
+// 黄煜涵：touchmove 处理——累加计数，更新红点位置，阻止页面滚动
+function hyhOnTouchMove(e) {
+  e.preventDefault();  // 阻止页面跟随滚动（关键）
+  hyh_moveCount++;
+  var t = e.touches[0];
+  // 只在每 5 次记录一次，避免日志爆炸
+  if (hyh_moveCount % 5 === 1) {
+    hyhLog('touchmove', '#' + hyh_moveCount + ' x=' + Math.round(t.clientX) + ' y=' + Math.round(t.clientY));
+  }
+  hyhShowDot(t.clientX, t.clientY);
+}
+
+// 黄煜涵：touchend 处理——记录结束，显示本次 move 总次数
+function hyhOnTouchEnd(e) {
+  var t = e.changedTouches[0];  // 抬手时用 changedTouches
+  hyhLog('touchend', '本次 move 共 ' + hyh_moveCount + ' 次');
+  hyhHideDot();
+}
+
+// 黄煜涵：touchcancel 处理——系统打断时清理状态
+function hyhOnTouchCancel(e) {
+  hyhLog('touchcancel', '被系统打断，清理状态');
+  hyhHideDot();
+  hyh_moveCount = 0;
+}
+
+// 黄煜涵：click 处理——验证 click 在 touchend 之后触发
+function hyhOnClick(e) {
+  hyhLog('click', 'x=' + Math.round(e.clientX) + ' y=' + Math.round(e.clientY));
+}
+
+// 黄煜涵：绑定所有事件到探针区
+function hyhBindProbe() {
+  hyh_probeEl.addEventListener('touchstart', hyhOnTouchStart, { passive: false });
+  hyh_probeEl.addEventListener('touchmove', hyhOnTouchMove, { passive: false });
+  hyh_probeEl.addEventListener('touchend', hyhOnTouchEnd);
+  hyh_probeEl.addEventListener('touchcancel', hyhOnTouchCancel);
+  hyh_probeEl.addEventListener('click', hyhOnClick);
+
+  // 桌面调试：mousedown/mousemove/mouseup 模拟
+  hyh_probeEl.addEventListener('mousedown', function(e) {
+    hyhOnTouchStart({ touches: [{ clientX: e.clientX, clientY: e.clientY }] });
+  });
+  hyh_probeEl.addEventListener('mouseup', function(e) {
+    hyhOnTouchEnd({ changedTouches: [{ clientX: e.clientX, clientY: e.clientY }] });
+  });
+}
+
+// 黄煜涵：清空日志按钮
+function hyhBindClear() {
+  document.getElementById('hyh_clearBtn').addEventListener('click', function() {
+    hyh_logEl.innerHTML = '';
+    hyh_moveCount = 0;
+  });
+}
+
+// 黄煜涵：统计按钮——alert 当前 move 计数
+function hyhBindCount() {
+  document.getElementById('hyh_countBtn').addEventListener('click', function() {
+    alert('本次拖动 touchmove 触发次数：' + hyh_moveCount);
+  });
+}
+
+// 黄煜涵：初始化
+hyhBindProbe();
+hyhBindClear();
+hyhBindCount();
+hyhLog('system', '事件侦探已就绪，请在黑色区域操作');
+</script>
+</body>
+</html>

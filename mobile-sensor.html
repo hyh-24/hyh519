@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<!-- 作者：黄煜涵 | 建立时间：2026-11-18 | 使用大模型：Kimi-K3.1-Pro | 功能名称：任务四摇一摇彩蛋+倾斜视差 -->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<!-- 手机页面三件套 ①（黄煜涵） -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>任务四 · 摇一摇 + 倾斜视差 · 黄煜涵</title>
+<style>
+  :root {
+    --hyh_bg: #f5f1ea;
+    --hyh_ink: #2c2c2c;
+    --hyh_primary: #c8102e;
+    --hyh_accent: #d4a574;
+    --hyh_border: #e5dcc8;
+    --hyh_muted: #7a7a7a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    /* 手机页面三件套 ②（黄煜涵） */
+    -webkit-tap-highlight-color: transparent;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--hyh_bg); color: var(--hyh_ink); line-height: 1.7;
+  }
+  .hyh_wrap { max-width: 640px; margin: 0 auto; padding: 16px; }
+  .hyh_home {
+    display: inline-block; margin: 8px 0 16px;
+    color: var(--hyh_primary); text-decoration: none; font-size: 14px;
+  }
+  .hyh_title { font-size: 22px; margin-bottom: 4px; }
+  .hyh_subtitle { font-size: 13px; color: var(--hyh_muted); margin-bottom: 20px; }
+
+  /* 模式切换按钮（黄煜涵） */
+  .hyh_mode_row {
+    display: flex; gap: 8px; margin-bottom: 20px;
+  }
+  .hyh_mode_btn {
+    flex: 1; padding: 12px; border: 2px solid var(--hyh_border);
+    background: #fff; border-radius: 10px; font-size: 14px;
+    cursor: pointer; touch-action: manipulation;
+  }
+  .hyh_mode_btn.hyh_active {
+    border-color: var(--hyh_primary); background: var(--hyh_primary); color: #fff;
+  }
+
+  /* 摇一摇舞台（黄煜涵） */
+  .hyh_shake_stage {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px; padding: 40px 20px; text-align: center;
+    color: #fff; min-height: 320px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    box-shadow: 0 4px 24px rgba(102, 126, 234, 0.3);
+  }
+  .hyh_shake_icon {
+    font-size: 80px; margin-bottom: 16px;
+    /* 摇动动画（黄煜涵） */
+    transition: transform 0.1s;
+  }
+  .hyh_shake_icon.hyh_shaking {
+    animation: hyh_shakeAnim 0.5s ease-in-out;
+  }
+  @keyframes hyh_shakeAnim {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-20deg); }
+    75% { transform: rotate(20deg); }
+  }
+  .hyh_shake_text { font-size: 18px; margin-bottom: 8px; }
+  .hyh_shake_sub { font-size: 13px; opacity: 0.85; }
+
+  /* 菜谱结果卡片（黄煜涵） */
+  .hyh_recipe_card {
+    background: #fff; border-radius: 12px; padding: 20px;
+    margin-top: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    display: none;
+  }
+  .hyh_recipe_card.hyh_show { display: block; animation: hyh_pop 0.4s ease-out; }
+  @keyframes hyh_pop {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .hyh_recipe_emoji { font-size: 60px; text-align: center; margin-bottom: 12px; }
+  .hyh_recipe_name { font-size: 20px; font-weight: 700; text-align: center; margin-bottom: 8px; }
+  .hyh_recipe_desc { font-size: 14px; color: var(--hyh_muted); text-align: center; }
+
+  /* 倾斜视差舞台（黄煜涵） */
+  .hyh_parallax_stage {
+    position: relative; height: 320px; border-radius: 16px;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    overflow: hidden; display: none;
+  }
+  .hyh_parallax_stage.hyh_show { display: block; }
+  .hyh_layer {
+    position: absolute; border-radius: 50%;
+    /* 视差层：JS 控制 transform（黄煜涵） */
+    transition: transform 0.1s ease-out;
+  }
+  .hyh_layer_1 { width: 80px; height: 80px; background: #ffd89b; top: 40px; left: 40px; opacity: 0.9; }
+  .hyh_layer_2 { width: 60px; height: 60px; background: #ff6b6b; top: 100px; right: 60px; opacity: 0.8; }
+  .hyh_layer_3 { width: 100px; height: 100px; background: #a8e063; bottom: 60px; left: 50%; margin-left: -50px; opacity: 0.7; }
+  .hyh_layer_4 { width: 50px; height: 50px; background: #fff; top: 50%; left: 50%; margin: -25px 0 0 -25px; }
+
+  /* iOS 权限按钮（黄煜涵） */
+  .hyh_permission_btn {
+    display: block; width: 100%; padding: 14px; margin: 12px 0;
+    background: var(--hyh_primary); color: #fff; border: none;
+    border-radius: 10px; font-size: 16px; cursor: pointer;
+    touch-action: manipulation;
+  }
+
+  /* 状态提示（黄煜涵） */
+  .hyh_status {
+    background: #fff; border-left: 4px solid var(--hyh_accent);
+    padding: 12px 16px; margin: 12px 0; border-radius: 0 8px 8px 0;
+    font-size: 13px;
+  }
+  .hyh_status.hyh_error { border-left-color: #e57373; background: #ffebee; }
+  .hyh_status.hyh_success { border-left-color: #66bb6a; background: #e8f5e9; }
+
+  /* 调试面板（黄煜涵） */
+  .hyh_debug {
+    background: #0a0a0a; color: #0f0; padding: 12px; border-radius: 8px;
+    font-family: monospace; font-size: 12px; line-height: 1.8;
+    margin-top: 16px;
+  }
+
+  /* 答辩要点（黄煜涵） */
+  .hyh_qa {
+    background: #fff; border-left: 4px solid var(--hyh_accent);
+    padding: 12px 16px; margin: 10px 0; border-radius: 0 8px 8px 0;
+  }
+  .hyh_qa_q { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+  .hyh_qa_a { font-size: 13px; color: var(--hyh_muted); }
+</style>
+</head>
+<body>
+<div class="hyh_wrap">
+  <a href="./mobile-homework.html" class="hyh_home">← 返回作业主页</a>
+
+  <h1 class="hyh_title">⭐⭐⭐⭐ 任务四：设备传感器</h1>
+  <p class="hyh_subtitle">摇一摇彩蛋 + 倾斜视差 · 权限处理 · 降级提示</p>
+
+  <!-- 模式切换（黄煜涵） -->
+  <div class="hyh_mode_row">
+    <button class="hyh_mode_btn hyh_active" id="hyh_modeShake">📳 摇一摇</button>
+    <button class="hyh_mode_btn" id="hyh_modeParallax">🔄 倾斜视差</button>
+  </div>
+
+  <!-- iOS 权限申请按钮（黄煜涵） -->
+  <button class="hyh_permission_btn" id="hyh_permBtn" style="display:none;">
+    🍎 点击申请传感器权限（iOS 13+）
+  </button>
+
+  <!-- 状态提示（黄煜涵） -->
+  <div class="hyh_status" id="hyh_status">正在检测设备能力…</div>
+
+  <!-- 摇一摇舞台（黄煜涵） -->
+  <div class="hyh_shake_stage" id="hyh_shakeStage">
+    <div class="hyh_shake_icon" id="hyh_shakeIcon">📱</div>
+    <div class="hyh_shake_text" id="hyh_shakeText">摇动手机试试</div>
+    <div class="hyh_shake_sub">用力摇几下，摇出今日推荐菜谱</div>
+  </div>
+
+  <!-- 菜谱结果卡片（黄煜涵） -->
+  <div class="hyh_recipe_card" id="hyh_recipeCard">
+    <div class="hyh_recipe_emoji" id="hyh_recipeEmoji">🍜</div>
+    <div class="hyh_recipe_name" id="hyh_recipeName">今日推荐</div>
+    <div class="hyh_recipe_desc" id="hyh_recipeDesc">—</div>
+  </div>
+
+  <!-- 倾斜视差舞台（黄煜涵） -->
+  <div class="hyh_parallax_stage" id="hyh_parallaxStage">
+    <div class="hyh_layer hyh_layer_1" id="hyh_layer1"></div>
+    <div class="hyh_layer hyh_layer_2" id="hyh_layer2"></div>
+    <div class="hyh_layer hyh_layer_3" id="hyh_layer3"></div>
+    <div class="hyh_layer hyh_layer_4" id="hyh_layer4"></div>
+  </div>
+
+  <!-- 调试面板（黄煜涵） -->
+  <div class="hyh_debug">
+    <div>模式: <span id="hyh_dbg_mode">shake</span></div>
+    <div>加速度 X: <span id="hyh_dbg_ax">-</span> Y: <span id="hyh_dbg_ay">-</span> Z: <span id="hyh_dbg_az">-</span></div>
+    <div>倾斜 β: <span id="hyh_dbg_beta">-</span> γ: <span id="hyh_dbg_gamma">-</span></div>
+    <div>上次触发: <span id="hyh_dbg_last">-</span></div>
+    <div>冷却剩余: <span id="hyh_dbg_cooldown">0</span>ms</div>
+  </div>
+
+  <!-- 答辩要点（黄煜涵） -->
+  <h3 style="font-size:15px;margin:20px 0 8px;">✅ 答辩要点</h3>
+  <div class="hyh_qa">
+    <div class="hyh_qa_q">Q: accelerationIncludingGravity 与 acceleration 的区别？</div>
+    <div class="hyh_qa_a">
+      <b>accelerationIncludingGravity</b>：包含重力加速度，手机静止放在桌上时 Z 轴读数约 9.8 m/s²（地球引力）。<br>
+      <b>acceleration</b>：不含重力，只反映手机本身的运动加速度，静止时三轴都接近 0。<br>
+      摇一摇用 <code>accelerationIncludingGravity</code> 更容易检测（静止时有基准值 9.8，摇动时变化明显）。
+    </div>
+  </div>
+  <div class="hyh_qa">
+    <div class="hyh_qa_q">Q: 为什么需要冷却时间？</div>
+    <div class="hyh_qa_a">
+      devicemotion 事件触发频率很高（约 60Hz），一次摇动会产生几十次"超阈值"读数。
+      如果不加冷却，摇一下会触发几十次彩蛋。<b>冷却 2000ms</b> 保证"一次摇动只触发一次"。
+    </div>
+  </div>
+  <div class="hyh_qa">
+    <div class="hyh_qa_q">Q: 设备不支持时如何降级？</div>
+    <div class="hyh_qa_a">
+      检测 <code>'DeviceMotionEvent' in window</code>，不支持时显示"当前设备不支持"提示，
+      不报错不白屏。桌面浏览器通常不支持，可以用 DevTools 设备模式模拟。
+    </div>
+  </div>
+</div>
+
+<script>
+// ========== 任务四：设备传感器（黄煜涵） ==========
+
+// 全局状态（黄煜涵）
+var hyh_mode = 'shake';           // shake | parallax
+var hyh_lastTriggerTime = 0;      // 上次触发时间戳
+var hyh_COOLDOWN = 2000;          // 冷却时间 2000ms
+var hyh_SHAKE_THRESHOLD = 15;     // 摇动阈值 15 m/s²
+var hyh_currentMode = 'shake';
+
+var hyh_statusEl = document.getElementById('hyh_status');
+var hyh_permBtn = document.getElementById('hyh_permBtn');
+
+// 今日菜谱数据（黄煜涵）
+var HYH_RECIPES = [
+  { emoji: '🍜', name: '兰州拉面', desc: '一清二白三红四绿五黄，汤鲜面劲道' },
+  { emoji: '🍲', name: '四川火锅', desc: '麻辣鲜香，毛肚鸭肠涮起来' },
+  { emoji: '🥟', name: '东北水饺', desc: '薄皮大馅，一口一个家的味道' },
+  { emoji: '🍛', name: '黄焖鸡米饭', desc: '酱香浓郁，下饭神器' },
+  { emoji: '🥘', name: '麻辣香锅', desc: '荤素搭配，香辣过瘾' },
+  { emoji: '🍱', name: '日式便当', desc: '精致营养，颜值与美味并存' },
+  { emoji: '🌮', name: '墨西哥卷饼', desc: '异国风味，换个口味' },
+  { emoji: '🍝', name: '意大利面', desc: '经典番茄肉酱，简单美味' }
+];
+
+// 黄煜涵：显示状态提示（type: info/error/success）
+function hyhSetStatus(text, type) {
+  hyh_statusEl.textContent = text;
+  hyh_statusEl.className = 'hyh_status' + (type ? ' hyh_' + type : '');
+}
+
+// 黄煜涵：检测设备能力，决定显示哪个提示
+function hyhDetectDevice() {
+  var hasMotion = 'DeviceMotionEvent' in window;
+  var hasOrientation = 'DeviceOrientationEvent' in window;
+
+  if (!hasMotion && !hasOrientation) {
+    hyhSetStatus('❌ 当前设备不支持传感器（桌面浏览器请用 DevTools 设备模式模拟）', 'error');
+    return false;
+  }
+
+  // iOS 13+ 需要用户主动申请权限
+  if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+    hyh_permBtn.style.display = 'block';
+    hyhSetStatus('🍎 检测到 iOS 设备，请点击下方按钮申请权限', 'info');
+    return false;  // 等用户点击授权
+  }
+
+  hyhSetStatus('✅ 设备支持传感器，可以开始使用', 'success');
+  return true;
+}
+
+// 黄煜涵：iOS 权限申请处理
+function hyhRequestPermission() {
+  if (typeof DeviceMotionEvent.requestPermission === 'function') {
+    DeviceMotionEvent.requestPermission().then(function(state) {
+      if (state === 'granted') {
+        hyhSetStatus('✅ 权限已授予，传感器已激活', 'success');
+        hyh_permBtn.style.display = 'none';
+        hyhStartListening();
+      } else {
+        hyhSetStatus('❌ 权限被拒绝，无法使用传感器', 'error');
+      }
+    }).catch(function(err) {
+      hyhSetStatus('❌ 权限申请失败：' + err.message, 'error');
+    });
+  }
+  // 同时申请方向权限
+  if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+    DeviceOrientationEvent.requestPermission().catch(function() {});
+  }
+}
+
+// 黄煜涵：devicemotion 事件处理——检测摇动
+function hyhOnMotion(e) {
+  if (hyh_currentMode !== 'shake') return;
+
+  // 用 accelerationIncludingGravity（含重力，静止时有基准值）
+  var acc = e.accelerationIncludingGravity;
+  if (!acc) return;
+
+  var ax = acc.x || 0;
+  var ay = acc.y || 0;
+  var az = acc.z || 0;
+
+  // 更新调试面板
+  document.getElementById('hyh_dbg_ax').textContent = ax.toFixed(1);
+  document.getElementById('hyh_dbg_ay').textContent = ay.toFixed(1);
+  document.getElementById('hyh_dbg_az').textContent = az.toFixed(1);
+
+  // 计算总加速度（三轴平方和开根号）
+  var total = Math.sqrt(ax * ax + ay * ay + az * az);
+
+  // 冷却判断
+  var now = Date.now();
+  var cooldownLeft = Math.max(0, hyh_COOLDOWN - (now - hyh_lastTriggerTime));
+  document.getElementById('hyh_dbg_cooldown').textContent = cooldownLeft;
+
+  // 超过阈值 + 冷却结束 → 触发彩蛋
+  if (total > hyh_SHAKE_THRESHOLD && cooldownLeft === 0) {
+    hyh_lastTriggerTime = now;
+    document.getElementById('hyh_dbg_last').textContent = new Date().toLocaleTimeString();
+    hyhTriggerShake();
+  }
+}
+
+// 黄煜涵：deviceorientation 事件处理——倾斜视差
+function hyhOnOrientation(e) {
+  if (hyh_currentMode !== 'parallax') return;
+
+  var beta = e.beta || 0;    // 前后倾斜 -180~180
+  var gamma = e.gamma || 0;  // 左右倾斜 -90~90
+
+  document.getElementById('hyh_dbg_beta').textContent = beta.toFixed(1);
+  document.getElementById('hyh_dbg_gamma').textContent = gamma.toFixed(1);
+
+  // 不同层用不同系数，产生视差效果
+  hyhMoveLayer('hyh_layer1', gamma * 0.5, beta * 0.3);
+  hyhMoveLayer('hyh_layer2', gamma * 0.8, beta * 0.5);
+  hyhMoveLayer('hyh_layer3', gamma * 1.2, beta * 0.7);
+  hyhMoveLayer('hyh_layer4', gamma * 1.5, beta * 1.0);
+}
+
+// 黄煜涵：移动单个视差层
+function hyhMoveLayer(id, x, y) {
+  var el = document.getElementById(id);
+  // 限制最大位移，防止跑出舞台
+  x = Math.max(-60, Math.min(60, x));
+  y = Math.max(-60, Math.min(60, y));
+  el.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
+}
+
+// 黄煜涵：触发摇一摇彩蛋——随机选一道菜
+function hyhTriggerShake() {
+  // 图标摇动动画
+  var icon = document.getElementById('hyh_shakeIcon');
+  icon.classList.remove('hyh_shaking');
+  void icon.offsetWidth;  // 强制重排，重置动画
+  icon.classList.add('hyh_shaking');
+
+  // 震动反馈（如果设备支持）
+  if (navigator.vibrate) {
+    navigator.vibrate(200);
+  }
+
+  // 随机选菜
+  var recipe = HYH_RECIPES[Math.floor(Math.random() * HYH_RECIPES.length)];
+  document.getElementById('hyh_recipeEmoji').textContent = recipe.emoji;
+  document.getElementById('hyh_recipeName').textContent = recipe.name;
+  document.getElementById('hyh_recipeDesc').textContent = recipe.desc;
+
+  // 显示卡片（重新触发动画）
+  var card = document.getElementById('hyh_recipeCard');
+  card.classList.remove('hyh_show');
+  void card.offsetWidth;
+  card.classList.add('hyh_show');
+
+  document.getElementById('hyh_shakeText').textContent = '🎉 摇出美味！';
+}
+
+// 黄煜涵：模式切换处理
+function hyhSwitchMode(newMode) {
+  hyh_currentMode = newMode;
+  document.getElementById('hyh_dbg_mode').textContent = newMode;
+
+  // 更新按钮样式
+  document.getElementById('hyh_modeShake').classList.toggle('hyh_active', newMode === 'shake');
+  document.getElementById('hyh_modeParallax').classList.toggle('hyh_active', newMode === 'parallax');
+
+  // 切换舞台显示
+  document.getElementById('hyh_shakeStage').style.display = newMode === 'shake' ? 'flex' : 'none';
+  document.getElementById('hyh_recipeCard').style.display = 'none';
+  document.getElementById('hyh_parallaxStage').classList.toggle('hyh_show', newMode === 'parallax');
+}
+
+// 黄煜涵：开始监听传感器事件
+function hyhStartListening() {
+  window.addEventListener('devicemotion', hyhOnMotion);
+  window.addEventListener('deviceorientation', hyhOnOrientation);
+}
+
+// 黄煜涵：绑定按钮 + 初始化
+function hyhInit() {
+  document.getElementById('hyh_modeShake').addEventListener('click', function() {
+    hyhSwitchMode('shake');
+  });
+  document.getElementById('hyh_modeParallax').addEventListener('click', function() {
+    hyhSwitchMode('parallax');
+  });
+  hyh_permBtn.addEventListener('click', hyhRequestPermission);
+
+  // 检测设备，如果不需要权限直接开始监听
+  if (hyhDetectDevice()) {
+    hyhStartListening();
+  }
+
+  // 桌面调试：按空格模拟摇一摇
+  document.addEventListener('keydown', function(e) {
+    if (e.code === 'Space' && hyh_currentMode === 'shake') {
+      var now = Date.now();
+      if (now - hyh_lastTriggerTime > hyh_COOLDOWN) {
+        hyh_lastTriggerTime = now;
+        hyhTriggerShake();
+      }
+    }
+  });
+
+  // 桌面调试：鼠标移动模拟倾斜视差
+  document.addEventListener('mousemove', function(e) {
+    if (hyh_currentMode !== 'parallax') return;
+    var cx = window.innerWidth / 2;
+    var cy = window.innerHeight / 2;
+    var gamma = (e.clientX - cx) / cx * 30;  // 模拟 -30~30 度
+    var beta = (e.clientY - cy) / cy * 30;
+    hyhOnOrientation({ beta: beta, gamma: gamma });
+  });
+}
+
+hyhInit();
+</script>
+</body>
+</html>

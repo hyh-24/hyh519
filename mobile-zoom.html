@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<!-- 作者：黄煜涵 | 建立时间：2026-11-18 | 使用大模型：Kimi-K3.1-Pro | 功能名称：任务三图片查看器——双指缩放+双击放大+拖动 -->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<!-- 手机页面三件套 ①：viewport（黄煜涵） -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>任务三 · 图片查看器 · 黄煜涵</title>
+<style>
+  :root {
+    --hyh_bg: #1a1a1a;
+    --hyh_ink: #eee;
+    --hyh_primary: #c8102e;
+    --hyh_accent: #d4a574;
+    --hyh_muted: #888;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    /* 手机页面三件套 ②（黄煜涵） */
+    -webkit-tap-highlight-color: transparent;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--hyh_bg); color: var(--hyh_ink);
+    overflow: hidden; height: 100vh;
+  }
+  .hyh_wrap { height: 100vh; display: flex; flex-direction: column; }
+
+  .hyh_header {
+    padding: 12px 16px; display: flex; align-items: center; gap: 12px;
+    background: rgba(0,0,0,0.5); z-index: 10;
+  }
+  .hyh_home {
+    color: var(--hyh_accent); text-decoration: none; font-size: 14px;
+  }
+  .hyh_title { font-size: 16px; flex: 1; }
+  .hyh_scale_badge {
+    background: var(--hyh_primary); color: #fff;
+    padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: 600;
+  }
+
+  /* 图片查看舞台：接管所有手势（黄煜涵） */
+  .hyh_viewer {
+    flex: 1; position: relative; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    /* 手机页面三件套 ③：接管所有手势（黄煜涵） */
+    touch-action: none;
+    user-select: none; -webkit-user-select: none;
+  }
+  .hyh_img {
+    max-width: 100%; max-height: 100%;
+    /* transform 变换由 JS 控制（黄煜涵） */
+    transform-origin: center center;
+    transition: transform 0.15s ease-out;
+    pointer-events: none;
+  }
+  .hyh_img.hyh_dragging { transition: none; }  /* 拖动时跟手，无过渡 */
+
+  /* 操作提示（黄煜涵） */
+  .hyh_hints {
+    padding: 12px 16px; background: rgba(0,0,0,0.5);
+    display: flex; justify-content: space-around; font-size: 12px; color: var(--hyh_muted);
+  }
+  .hyh_hint_item { text-align: center; }
+  .hyh_hint_icon { font-size: 20px; display: block; margin-bottom: 4px; }
+
+  /* 调试面板（黄煜涵） */
+  .hyh_debug {
+    position: absolute; top: 60px; left: 16px;
+    background: rgba(0,0,0,0.7); padding: 8px 12px; border-radius: 6px;
+    font-size: 11px; font-family: monospace; color: #0f0;
+    line-height: 1.6; pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div class="hyh_wrap">
+  <div class="hyh_header">
+    <a href="./mobile-homework.html" class="hyh_home">← 返回</a>
+    <div class="hyh_title">⭐⭐⭐ 任务三：图片查看器</div>
+    <div class="hyh_scale_badge" id="hyh_scaleBadge">1.0x</div>
+  </div>
+
+  <!-- 图片查看舞台（黄煜涵） -->
+  <div class="hyh_viewer" id="hyh_viewer">
+    <!-- AI 生成的图片（按规则使用指定 API，黄煜涵） -->
+    <img
+      id="hyh_img"
+      class="hyh_img"
+      src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=beautiful%20chinese%20landscape%20painting%20mountains%20rivers%20mist%20traditional%20ink%20style%20high%20detail&image_size=landscape_16_9"
+      alt="中国山水画"
+      draggable="false"
+    >
+    <div class="hyh_debug">
+      <div>scale: <span id="hyh_dbg_scale">1.00</span></div>
+      <div>tx: <span id="hyh_dbg_tx">0</span> ty: <span id="hyh_dbg_ty">0</span></div>
+      <div>fingers: <span id="hyh_dbg_fingers">0</span></div>
+    </div>
+  </div>
+
+  <!-- 操作提示（黄煜涵） -->
+  <div class="hyh_hints">
+    <div class="hyh_hint_item">
+      <span class="hyh_hint_icon">🤏</span>
+      双指缩放 1x~4x
+    </div>
+    <div class="hyh_hint_item">
+      <span class="hyh_hint_icon">👆👆</span>
+      双击 1x/2x
+    </div>
+    <div class="hyh_hint_item">
+      <span class="hyh_hint_icon">👆</span>
+      放大后单指拖动
+    </div>
+    <div class="hyh_hint_item">
+      <span class="hyh_hint_icon">🔄</span>
+      1x 自动居中
+    </div>
+  </div>
+</div>
+
+<script>
+// ========== 任务三：图片查看器（黄煜涵） ==========
+
+// 全局状态（黄煜涵）
+var hyh_scale = 1;              // 当前缩放比例 1~4
+var hyh_tx = 0;                 // 当前 X 平移
+var hyh_ty = 0;                 // 当前 Y 平移
+var hyh_MIN_SCALE = 1;
+var hyh_MAX_SCALE = 4;
+
+// 触摸起点缓存（黄煜涵）
+var hyh_startDist = 0;          // 双指起始距离
+var hyh_startScale = 1;         // 双指起始缩放
+var hyh_startTx = 0;            // 单指起始平移 X
+var hyh_startTy = 0;            // 单指起始平移 Y
+var hyh_startX = 0;             // 单指起始坐标
+var hyh_startY = 0;
+var hyh_lastTapTime = 0;        // 上次点击时间（双击判断）
+var hyh_mode = 'idle';          // idle | drag | pinch
+
+var hyh_viewerEl = document.getElementById('hyh_viewer');
+var hyh_imgEl = document.getElementById('hyh_img');
+var hyh_scaleBadge = document.getElementById('hyh_scaleBadge');
+
+// 黄煜涵：计算两个触点之间的欧氏距离
+function hyhDist(t1, t2) {
+  var dx = t1.clientX - t2.clientX;
+  var dy = t1.clientY - t2.clientY;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+// 黄煜涵：把当前 scale/tx/ty 应用到图片 transform
+function hyhApplyTransform() {
+  hyh_imgEl.style.transform = 'translate(' + hyh_tx + 'px, ' + hyh_ty + 'px) scale(' + hyh_scale + ')';
+  hyh_scaleBadge.textContent = hyh_scale.toFixed(1) + 'x';
+  document.getElementById('hyh_dbg_scale').textContent = hyh_scale.toFixed(2);
+  document.getElementById('hyh_dbg_tx').textContent = Math.round(hyh_tx);
+  document.getElementById('hyh_dbg_ty').textContent = Math.round(hyh_ty);
+}
+
+// 黄煜涵：限制 scale 在 [MIN, MAX] 区间
+function hyhClampScale(s) {
+  return Math.max(hyh_MIN_SCALE, Math.min(hyh_MAX_SCALE, s));
+}
+
+// 黄煜涵：限制平移边界——1x 时不允许拖出边界，放大时限制在图片可视范围内
+function hyhClampTranslate() {
+  if (hyh_scale <= 1) {
+    hyh_tx = 0;
+    hyh_ty = 0;
+    return;
+  }
+  // 放大后可拖动的最大距离 = (图片放大后的尺寸 - 容器尺寸) / 2
+  var maxTx = (hyh_viewerEl.offsetWidth * (hyh_scale - 1)) / 2;
+  var maxTy = (hyh_viewerEl.offsetHeight * (hyh_scale - 1)) / 2;
+  hyh_tx = Math.max(-maxTx, Math.min(maxTx, hyh_tx));
+  hyh_ty = Math.max(-maxTy, Math.min(maxTy, hyh_ty));
+}
+
+// 黄煜涵：touchstart——区分单指/双指模式
+function hyhOnStart(e) {
+  e.preventDefault();
+  var fingers = e.touches.length;
+  document.getElementById('hyh_dbg_fingers').textContent = fingers;
+
+  if (fingers === 1) {
+    // 单指：可能是拖动，也可能是双击
+    var t = e.touches[0];
+    hyh_mode = 'drag';
+    hyh_startX = t.clientX;
+    hyh_startY = t.clientY;
+    hyh_startTx = hyh_tx;
+    hyh_startTy = hyh_ty;
+    hyh_imgEl.classList.add('hyh_dragging');
+
+    // 双击判断（300ms 内第二次点击）
+    var now = Date.now();
+    if (now - hyh_lastTapTime < 300) {
+      hyhOnDoubleTap();
+      hyh_lastTapTime = 0;
+    } else {
+      hyh_lastTapTime = now;
+    }
+  } else if (fingers === 2) {
+    // 双指：进入缩放模式
+    hyh_mode = 'pinch';
+    hyh_startDist = hyhDist(e.touches[0], e.touches[1]);
+    hyh_startScale = hyh_scale;
+    hyh_imgEl.classList.add('hyh_dragging');
+  }
+}
+
+// 黄煜涵：touchmove——根据模式处理拖动或缩放
+function hyhOnMove(e) {
+  e.preventDefault();
+  var fingers = e.touches.length;
+  document.getElementById('hyh_dbg_fingers').textContent = fingers;
+
+  if (hyh_mode === 'pinch' && fingers === 2) {
+    // 双指缩放：当前距离 / 起始距离 * 起始缩放
+    var currentDist = hyhDist(e.touches[0], e.touches[1]);
+    var ratio = currentDist / hyh_startDist;
+    hyh_scale = hyhClampScale(hyh_startScale * ratio);
+    hyhClampTranslate();
+    hyhApplyTransform();
+  } else if (hyh_mode === 'drag' && fingers === 1 && hyh_scale > 1) {
+    // 单指拖动（仅放大时允许）
+    var t = e.touches[0];
+    hyh_tx = hyh_startTx + (t.clientX - hyh_startX);
+    hyh_ty = hyh_startTy + (t.clientY - hyh_startY);
+    hyhClampTranslate();
+    hyhApplyTransform();
+  }
+}
+
+// 黄煜涵：touchend——清理状态，缩回 1x 时自动居中
+function hyhOnEnd(e) {
+  hyh_imgEl.classList.remove('hyh_dragging');
+  if (e.touches.length === 0) {
+    hyh_mode = 'idle';
+    // 如果缩放到 1x 以下，回弹到 1x 并居中
+    if (hyh_scale < 1.05) {
+      hyh_scale = 1;
+      hyh_tx = 0;
+      hyh_ty = 0;
+      hyhApplyTransform();
+    }
+  } else if (e.touches.length === 1) {
+    // 双指变单指：切换到拖动模式，重新记录起点
+    var t = e.touches[0];
+    hyh_mode = 'drag';
+    hyh_startX = t.clientX;
+    hyh_startY = t.clientY;
+    hyh_startTx = hyh_tx;
+    hyh_startTy = hyh_ty;
+  }
+  document.getElementById('hyh_dbg_fingers').textContent = e.touches.length;
+}
+
+// 黄煜涵：双击处理——1x ↔ 2x 切换
+function hyhOnDoubleTap() {
+  if (hyh_scale > 1) {
+    hyh_scale = 1;
+    hyh_tx = 0;
+    hyh_ty = 0;
+  } else {
+    hyh_scale = 2;
+  }
+  hyhClampTranslate();
+  hyhApplyTransform();
+}
+
+// 黄煜涵：touchcancel——系统打断时清理
+function hyhOnCancel() {
+  hyh_mode = 'idle';
+  hyh_imgEl.classList.remove('hyh_dragging');
+}
+
+// 黄煜涵：横竖屏切换时保持状态（重算边界）
+function hyhOnResize() {
+  hyhClampTranslate();
+  hyhApplyTransform();
+}
+
+// 黄煜涵：绑定事件 + 初始化
+function hyhInit() {
+  hyh_viewerEl.addEventListener('touchstart', hyhOnStart, { passive: false });
+  hyh_viewerEl.addEventListener('touchmove', hyhOnMove, { passive: false });
+  hyh_viewerEl.addEventListener('touchend', hyhOnEnd);
+  hyh_viewerEl.addEventListener('touchcancel', hyhOnCancel);
+  window.addEventListener('resize', hyhOnResize);
+  window.addEventListener('orientationchange', hyhOnResize);
+
+  // 桌面调试：滚轮缩放
+  hyh_viewerEl.addEventListener('wheel', function(e) {
+    e.preventDefault();
+    var delta = e.deltaY > 0 ? -0.1 : 0.1;
+    hyh_scale = hyhClampScale(hyh_scale + delta);
+    hyhClampTranslate();
+    hyhApplyTransform();
+  }, { passive: false });
+
+  // 桌面调试：双击
+  hyh_viewerEl.addEventListener('dblclick', hyhOnDoubleTap);
+
+  hyhApplyTransform();
+}
+
+hyhInit();
+</script>
+</body>
+</html>

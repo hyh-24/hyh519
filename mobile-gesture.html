@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<!-- 作者：黄煜涵 | 建立时间：2026-11-18 | 使用大模型：Kimi-K3.1-Pro | 功能名称：任务二手势卡片——左右滑动切换中华美食 -->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<!-- 手机页面三件套 ①：viewport（黄煜涵） -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>任务二 · 手势卡片 · 黄煜涵</title>
+<style>
+  :root {
+    --hyh_bg: #f5f1ea;
+    --hyh_ink: #2c2c2c;
+    --hyh_primary: #c8102e;
+    --hyh_accent: #d4a574;
+    --hyh_border: #e5dcc8;
+    --hyh_muted: #7a7a7a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    /* 手机页面三件套 ②：去掉点击高亮（黄煜涵） */
+    -webkit-tap-highlight-color: transparent;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--hyh_bg); color: var(--hyh_ink); line-height: 1.7;
+    /* 防止拖动卡片时整个页面跟着滚动（黄煜涵） */
+    overscroll-behavior: none;
+  }
+  .hyh_wrap { max-width: 640px; margin: 0 auto; padding: 16px; }
+  .hyh_home {
+    display: inline-block; margin: 8px 0 16px;
+    color: var(--hyh_primary); text-decoration: none; font-size: 14px;
+  }
+  .hyh_title { font-size: 22px; margin-bottom: 4px; }
+  .hyh_subtitle { font-size: 13px; color: var(--hyh_muted); margin-bottom: 20px; }
+
+  /* 卡片舞台：接管手势的容器（黄煜涵） */
+  .hyh_stage {
+    position: relative; height: 420px; border-radius: 16px;
+    overflow: hidden; background: #fff;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    /* 手机页面三件套 ③：touch-action 只加在接管手势的容器上（黄煜涵） */
+    touch-action: pan-y;  /* 只接管横向，纵向保留页面滚动 */
+    user-select: none; -webkit-user-select: none;
+  }
+
+  /* 单张美食卡片（黄煜涵） */
+  .hyh_card {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    /* 0.3s 过渡动画（黄煜涵） */
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+  }
+  .hyh_card_emoji {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    font-size: 140px;
+  }
+  .hyh_card_info {
+    padding: 20px; background: #fff;
+  }
+  .hyh_card_name { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .hyh_card_en { font-size: 12px; color: var(--hyh_muted); letter-spacing: 2px; margin-bottom: 10px; }
+  .hyh_card_desc { font-size: 14px; color: #555; line-height: 1.8; }
+  .hyh_card_tag {
+    display: inline-block; padding: 3px 10px; margin: 8px 6px 0 0;
+    background: #fdf2e9; color: #b8752a; font-size: 12px; border-radius: 4px;
+  }
+
+  /* 4 种美食的渐变背景（黄煜涵） */
+  .hyh_bg_0 { background: linear-gradient(135deg, #ff9a56 0%, #ff6b6b 100%); }
+  .hyh_bg_1 { background: linear-gradient(135deg, #ffd89b 0%, #ff8c42 100%); }
+  .hyh_bg_2 { background: linear-gradient(135deg, #a8e063 0%, #56ab2f 100%); }
+  .hyh_bg_3 { background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%); }
+
+  /* 进度指示器（黄煜涵） */
+  .hyh_indicator {
+    display: flex; justify-content: center; gap: 8px; margin: 20px 0 12px;
+  }
+  .hyh_dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #ddd; transition: all 0.3s;
+  }
+  .hyh_dot.hyh_active { background: var(--hyh_primary); width: 24px; border-radius: 4px; }
+
+  /* 提示文本（黄煜涵） */
+  .hyh_tip {
+    text-align: center; font-size: 14px; color: var(--hyh_muted);
+    min-height: 24px; margin-top: 8px;
+  }
+  .hyh_tip.hyh_warn { color: var(--hyh_primary); font-weight: 600; }
+
+  /* 计数（黄煜涵） */
+  .hyh_counter {
+    text-align: center; font-size: 13px; color: var(--hyh_muted); margin-top: 4px;
+  }
+
+  /* 调试信息（黄煜涵） */
+  .hyh_debug {
+    background: #fff; border: 1px solid var(--hyh_border); border-radius: 8px;
+    padding: 12px; font-size: 12px; font-family: monospace; color: var(--hyh_muted);
+    margin-top: 20px; line-height: 1.8;
+  }
+</style>
+</head>
+<body>
+<div class="hyh_wrap">
+  <a href="./mobile-homework.html" class="hyh_home">← 返回作业主页</a>
+
+  <h1 class="hyh_title">⭐⭐ 任务二：手势卡片</h1>
+  <p class="hyh_subtitle">左右滑动切换中华美食 · 阈值 30px · 0.3s 过渡 · 边界提示</p>
+
+  <!-- 卡片舞台（黄煜涵） -->
+  <div class="hyh_stage" id="hyh_stage">
+    <!-- 4 张卡片由 JS 渲染 -->
+  </div>
+
+  <!-- 进度点（黄煜涵） -->
+  <div class="hyh_indicator" id="hyh_indicator"></div>
+
+  <!-- 提示与计数（黄煜涵） -->
+  <div class="hyh_tip" id="hyh_tip">👈 左右滑动切换美食 👉</div>
+  <div class="hyh_counter" id="hyh_counter">1 / 4</div>
+
+  <!-- 调试信息（黄煜涵） -->
+  <div class="hyh_debug" id="hyh_debug">
+    <div>起点 X: <span id="hyh_dbg_start">-</span></div>
+    <div>位移 ΔX: <span id="hyh_dbg_delta">-</span></div>
+    <div>方向: <span id="hyh_dbg_dir">-</span></div>
+    <div>是否切换: <span id="hyh_dbg_switch">-</span></div>
+  </div>
+</div>
+
+<script>
+// ========== 任务二：手势卡片（黄煜涵） ==========
+
+// 4 道中华美食数据（黄煜涵）
+var HYH_DISHES = [
+  { name: '北京烤鸭', en: 'PEKING DUCK', emoji: '🦆', desc: '皮脆肉嫩，荷叶饼卷葱丝甜面酱，一口下去满嘴留香。', tags: ['京菜', '烤制', '名菜'] },
+  { name: '麻婆豆腐', en: 'MAPO TOFU', emoji: '🌶️', desc: '麻辣鲜香烫嫩酥，川菜代表作，下饭神器。', tags: ['川菜', '麻辣', '家常'] },
+  { name: '小笼包', en: 'XIAOLONGBAO', emoji: '🥟', desc: '薄皮大馅十八褶，轻轻提慢慢移，先开窗后喝汤。', tags: ['沪菜', '蒸制', '点心'] },
+  { name: '西湖醋鱼', en: 'WEST LAKE FISH', emoji: '🐟', desc: '酸甜鲜嫩，蟹味十足，杭帮菜的头牌。', tags: ['浙菜', '酸甜', '河鲜'] }
+];
+
+// 全局状态（黄煜涵）
+var hyh_currentIndex = 0;       // 当前显示第几张
+var hyh_startX = 0;             // 触摸起点 X
+var hyh_startY = 0;             // 触摸起点 Y
+var hyh_isDragging = false;     // 是否正在拖动
+var hyh_THRESHOLD = 30;         // 滑动阈值 30px（经验值）
+var hyh_isAnimating = false;    // 动画锁，防止快速连续滑动跳两张
+
+var hyh_stageEl = document.getElementById('hyh_stage');
+var hyh_indicatorEl = document.getElementById('hyh_indicator');
+var hyh_tipEl = document.getElementById('hyh_tip');
+var hyh_counterEl = document.getElementById('hyh_counter');
+
+// 黄煜涵：初始化渲染 4 张卡片
+function hyhRenderCards() {
+  HYH_DISHES.forEach(function(dish, i) {
+    var card = document.createElement('div');
+    card.className = 'hyh_card hyh_bg_' + i;
+    card.id = 'hyh_card_' + i;
+    card.innerHTML =
+      '<div class="hyh_card_emoji">' + dish.emoji + '</div>' +
+      '<div class="hyh_card_info">' +
+        '<div class="hyh_card_name">' + dish.name + '</div>' +
+        '<div class="hyh_card_en">' + dish.en + '</div>' +
+        '<div class="hyh_card_desc">' + dish.desc + '</div>' +
+        '<div>' + dish.tags.map(function(t) { return '<span class="hyh_card_tag">' + t + '</span>'; }).join('') + '</div>' +
+      '</div>';
+    hyh_stageEl.appendChild(card);
+  });
+}
+
+// 黄煜涵：渲染进度指示器小圆点
+function hyhRenderIndicator() {
+  hyh_indicatorEl.innerHTML = '';
+  HYH_DISHES.forEach(function(_, i) {
+    var dot = document.createElement('div');
+    dot.className = 'hyh_dot' + (i === hyh_currentIndex ? ' hyh_active' : '');
+    hyh_indicatorEl.appendChild(dot);
+  });
+}
+
+// 黄煜涵：根据当前 index 更新所有卡片位置（prev 在左 -100%，current 在 0，next 在右 100%）
+function hyhUpdateCardPositions(offsetX) {
+  offsetX = offsetX || 0;
+  HYH_DISHES.forEach(function(_, i) {
+    var card = document.getElementById('hyh_card_' + i);
+    var diff = i - hyh_currentIndex;
+    var baseX = diff * 100;  // 百分比位置
+    // 拖动时叠加像素偏移（转换为百分比近似）
+    var dragPercent = (offsetX / hyh_stageEl.offsetWidth) * 100;
+    card.style.transform = 'translateX(' + (baseX + dragPercent) + '%)';
+    card.style.opacity = (diff === 0) ? '1' : '0.6';
+  });
+}
+
+// 黄煜涵：更新计数显示
+function hyhUpdateCounter() {
+  hyh_counterEl.textContent = (hyh_currentIndex + 1) + ' / ' + HYH_DISHES.length;
+}
+
+// 黄煜涵：显示提示信息（warn=true 时变红色强调）
+function hyhShowTip(text, isWarn) {
+  hyh_tipEl.textContent = text;
+  hyh_tipEl.className = 'hyh_tip' + (isWarn ? ' hyh_warn' : '');
+  // 2 秒后恢复默认提示
+  setTimeout(function() {
+    hyh_tipEl.textContent = '👈 左右滑动切换美食 👉';
+    hyh_tipEl.className = 'hyh_tip';
+  }, 2000);
+}
+
+// 黄煜涵：切换到指定 index（带边界检查）
+function hyhGoTo(newIndex) {
+  if (hyh_isAnimating) return;  // 动画期间不响应，防止跳两张
+  if (newIndex < 0) {
+    hyhShowTip('⚠️ 已经是第一道了！', true);
+    return;
+  }
+  if (newIndex >= HYH_DISHES.length) {
+    hyhShowTip('⚠️ 已经是最后一道了！', true);
+    return;
+  }
+  hyh_isAnimating = true;
+  hyh_currentIndex = newIndex;
+  hyhUpdateCardPositions(0);
+  hyhRenderIndicator();
+  hyhUpdateCounter();
+  setTimeout(function() { hyh_isAnimating = false; }, 300);  // 与 CSS 过渡时间一致
+}
+
+// 黄煜涵：touchstart——记录起点，标记开始拖动
+function hyhOnStart(e) {
+  if (hyh_isAnimating) return;
+  var t = e.touches[0];
+  hyh_startX = t.clientX;
+  hyh_startY = t.clientY;
+  hyh_isDragging = true;
+  document.getElementById('hyh_dbg_start').textContent = Math.round(hyh_startX);
+  // 拖动时禁用过渡，跟手
+  HYH_DISHES.forEach(function(_, i) {
+    document.getElementById('hyh_card_' + i).style.transition = 'none';
+  });
+}
+
+// 黄煜涵：touchmove——计算位移，实时跟手
+function hyhOnMove(e) {
+  if (!hyh_isDragging) return;
+  var t = e.touches[0];
+  var deltaX = t.clientX - hyh_startX;
+  var deltaY = t.clientY - hyh_startY;
+  // 如果纵向位移大于横向，不接管（留给页面滚动）
+  if (Math.abs(deltaY) > Math.abs(deltaX)) return;
+  e.preventDefault();  // 横向滑动时阻止默认行为
+  document.getElementById('hyh_dbg_delta').textContent = Math.round(deltaX);
+  hyhUpdateCardPositions(deltaX);
+}
+
+// 黄煜涵：touchend——根据位移判断方向，超过阈值则切换
+function hyhOnEnd(e) {
+  if (!hyh_isDragging) return;
+  hyh_isDragging = false;
+  var t = e.changedTouches[0];
+  var deltaX = t.clientX - hyh_startX;
+  // 恢复过渡动画
+  HYH_DISHES.forEach(function(_, i) {
+    document.getElementById('hyh_card_' + i).style.transition = '';
+  });
+
+  var direction = deltaX > 0 ? '右滑 →' : (deltaX < 0 ? '← 左滑' : '无位移');
+  document.getElementById('hyh_dbg_dir').textContent = direction + ' (' + Math.round(deltaX) + 'px)';
+
+  // 阈值判断（关键：防止短距离误触）
+  if (Math.abs(deltaX) < hyh_THRESHOLD) {
+    document.getElementById('hyh_dbg_switch').textContent = '否（位移 < ' + hyh_THRESHOLD + 'px）';
+    hyhUpdateCardPositions(0);  // 回弹
+    return;
+  }
+  document.getElementById('hyh_dbg_switch').textContent = '是';
+  if (deltaX > 0) {
+    hyhGoTo(hyh_currentIndex - 1);  // 右滑 → 上一张
+  } else {
+    hyhGoTo(hyh_currentIndex + 1);  // 左滑 → 下一张
+  }
+}
+
+// 黄煜涵：touchcancel——系统打断时清理状态
+function hyhOnCancel() {
+  hyh_isDragging = false;
+  HYH_DISHES.forEach(function(_, i) {
+    document.getElementById('hyh_card_' + i).style.transition = '';
+  });
+  hyhUpdateCardPositions(0);
+}
+
+// 黄煜涵：绑定事件 + 初始化
+function hyhInit() {
+  hyhRenderCards();
+  hyhRenderIndicator();
+  hyhUpdateCounter();
+  hyhUpdateCardPositions(0);
+
+  hyh_stageEl.addEventListener('touchstart', hyhOnStart, { passive: false });
+  hyh_stageEl.addEventListener('touchmove', hyhOnMove, { passive: false });
+  hyh_stageEl.addEventListener('touchend', hyhOnEnd);
+  hyh_stageEl.addEventListener('touchcancel', hyhOnCancel);
+
+  // 桌面调试：鼠标模拟
+  var hyh_mouseDown = false;
+  hyh_stageEl.addEventListener('mousedown', function(e) {
+    hyh_mouseDown = true;
+    hyhOnStart({ touches: [{ clientX: e.clientX, clientY: e.clientY }] });
+  });
+  hyh_stageEl.addEventListener('mousemove', function(e) {
+    if (hyh_mouseDown) hyhOnMove({ touches: [{ clientX: e.clientX, clientY: e.clientY }], preventDefault: function(){} });
+  });
+  hyh_stageEl.addEventListener('mouseup', function(e) {
+    hyh_mouseDown = false;
+    hyhOnEnd({ changedTouches: [{ clientX: e.clientX, clientY: e.clientY }] });
+  });
+}
+
+hyhInit();
+</script>
+</body>
+</html>
