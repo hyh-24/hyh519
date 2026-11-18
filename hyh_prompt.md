@@ -1010,3 +1010,24 @@ C:\Users\HYH\Desktop\webhyh\index\index.html把这个文件夹提交到github
 - **提示词内容**:
 
 帮我检查线上页面是否已更新
+
+---
+### 提示词日志 #94
+
+- **时间**: 2026-11-18 14:15:00
+- **模型**: Trae (AI Assistant)
+- **任务类型**: 问答/分享链接
+- **提示词内容**:
+
+C:\Users\HYH\Desktop\webhyh\mobile-homework.html给我一个手机能打开的网页链接
+
+---
+### 提示词日志 #95
+
+- **时间**: 2026-11-18 14:25:00
+- **模型**: Trae (AI Assistant)
+- **任务类型**: 修改/嵌入视频
+- **提示词内容**:
+
+C:\Users\HYH\Desktop\webhyh\mobile-homework.html修改这个网页，第一个视频放到任务三那边，第二个视频放到任务四那边
+（上传了 video(50).mp4 和 video(49).mp4）

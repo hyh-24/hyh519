@@ -63,6 +63,18 @@
   .hyh_task_star { font-size: 14px; color: var(--hyh_accent); }
   .hyh_task_name { font-size: 16px; font-weight: 600; }
   .hyh_task_desc { font-size: 13px; color: var(--hyh_muted); }
+
+  /* 任务演示视频（黄煜涵） */
+  .hyh_task_video_wrap {
+    margin-top: 12px; margin-bottom: 16px;
+    border-radius: 10px; overflow: hidden;
+    background: #000; border: 1px solid var(--hyh_border);
+  }
+  .hyh_task_video { display: block; width: 100%; height: auto; }
+  .hyh_task_video_label {
+    display: block; font-size: 12px; color: var(--hyh_muted);
+    text-align: center; padding: 6px 0; background: var(--hyh_card);
+  }
   .hyh_task_tag {
     display: inline-block; font-size: 11px; padding: 2px 8px;
     background: #fdf2e9; color: #b8752a; border-radius: 4px; margin-left: auto;
@@ -170,6 +182,11 @@
       </div>
       <div class="hyh_task_desc">多指手势 · 变换 · 状态管理：双指缩放 + 双击放大 + 拖动</div>
     </a>
+    <!-- 任务三演示视频（黄煜涵） -->
+    <div class="hyh_task_video_wrap">
+      <video class="hyh_task_video" src="./videos/task3-zoom.mp4" controls playsinline preload="metadata" poster=""></video>
+      <span class="hyh_task_video_label">🎬 任务三演示：图片查看器双指缩放</span>
+    </div>
     <a href="./mobile-sensor.html" class="hyh_task_card">
       <div class="hyh_task_head">
         <span class="hyh_task_star">⭐⭐⭐⭐</span>
@@ -178,6 +195,11 @@
       </div>
       <div class="hyh_task_desc">设备传感器 · 权限 · 降级：摇出今日菜谱 + 倾斜视差</div>
     </a>
+    <!-- 任务四演示视频（黄煜涵） -->
+    <div class="hyh_task_video_wrap">
+      <video class="hyh_task_video" src="./videos/task4-sensor.mp4" controls playsinline preload="metadata" poster=""></video>
+      <span class="hyh_task_video_label">🎬 任务四演示：摇一摇彩蛋 + 倾斜视差</span>
+    </div>
   </div>
 
   <!-- 任务一：事件侦探（黄煜涵） -->
